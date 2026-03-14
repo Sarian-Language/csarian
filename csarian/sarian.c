@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "lexer.h"
+#include "definitions.h"
 
 int sarian(char *code)
 {

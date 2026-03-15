@@ -1,4 +1,4 @@
-# Sarian – Version 0.1 (Alpha)
+# Sarian
 
 **Sarian** is an interpreted programming language written in C, designed for simplicity and rapid development. Still under active development, so you can expect unfinished code.
 
@@ -8,7 +8,7 @@
 
 - **Documentation:** (yet to be made)
 - **Supported platforms:** Linux, Windows
-- **License:** MIT License  
+- **License:** MIT License
 
 ---
 
@@ -32,9 +32,9 @@ This will compile the interpreter to `build/sarian`.
 
 ## Community & Core Development
 
-Join the **Sarian Discord** community: [discord.gg/DWCpW3V6KT](https://discord.gg/DWCpW3V6KT)
+**Sarian Discord** community: [discord.gg/DWCpW3V6KT](https://discord.gg/DWCpW3V6KT)
 
-If you are interested in **becoming a core developer** of Sarian, you’ll find all relevant information in the Discord server.
+Also, if you are interested in **becoming a core developer** of Sarian, you’ll find all relevant information in the Discord server.
 
 Benefits of being a Core Developer:
 - Occasional monetary compensation

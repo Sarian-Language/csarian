@@ -111,7 +111,7 @@ void function_name()
     ```c
     // This is a very, very, very, very, very, very, very
     // long comment, you can still see this comment
-    // in small screens // This is a very very very very very very very long comment, this comment is so long that in small screens you can't see past right
+    // in small screens
     ```
     
   * ❌

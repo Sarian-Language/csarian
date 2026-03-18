@@ -8,9 +8,8 @@ Before contributing, please read these guidelines carefully.
 
 1. **AI / Automated Code Usage**
 
-   * Contributions generated with AI or automated tools **must not exceed around 5% of the code** pushed.
-   * Any AI-generated code **must be reviewed and verified** by you before submission.
-   * AI-generated code must be notified in the commit message.
+   * Contributions generated with AI or automated tools **are not allowed**.
+   * (**You can get help from AI but you can't copy-paste code**.)
 
 2. **Commit Messages**
 

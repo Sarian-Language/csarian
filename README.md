@@ -8,7 +8,7 @@
 
 ## General Information
 
-- **Status: ** Working in 0.1 version
+- **Status:** Working in 0.1 version
 - **Documentation:** (yet to be made)
 - **Supported platforms:** Linux, Windows
 - **License:** MIT License

@@ -1,11 +1,14 @@
+![SarianIcon](https://avatars.githubusercontent.com/u/267779586?s=200&v=4)
+
 # Sarian
 
-**Sarian** is an interpreted programming language written in C, designed for simplicity and rapid development. Still under active development, so you can expect unfinished code.
+**Sarian** is an interpreted programming language written in C, designed for simplicity and rapid development.
 
 ---
 
 ## General Information
 
+- **Status:** Working in 0.1 version
 - **Documentation:** (yet to be made)
 - **Supported platforms:** Linux, Windows
 - **License:** MIT License

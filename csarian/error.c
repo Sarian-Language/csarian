@@ -32,6 +32,9 @@ int error(int line, int error_type, char *error_message)
         case IDENTIFIER_UNKNOWN:
             fprintf(stderr, "\nIDENTIFIER_UNKNOWN Error (%d), at line: %d\n%s\n",error_type,line,error_message);
             exit(1);
+        case TYPE_INVALID_OPERANDS:
+            fprintf(stderr, "\nTYPE_INVALID_OPERANDS Error (%d), at line: %d\n%s\n",error_type,line,error_message);
+            exit(1);
 
         default:
             fprintf(stderr, "\n[!] Unknown error type: %d\n",error_type);

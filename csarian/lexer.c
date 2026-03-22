@@ -1,4 +1,5 @@
 // lexer.c
+#include "lexer.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,6 +9,8 @@
 
 #include "definitions.h"
 #include "error.h"
+#include "debug.h"
+#include "interpreter.h"
 
 int current_token;
 size_t tokens_len;
@@ -35,111 +38,7 @@ void AddToken(TokenType token_type, char *token_value, TokenPrecedence token_pre
   current_token++;
 }
 
-// Debug feature
-void PrintTokens(Token *tokens, int numTokens) {
-  for (int i = 0; i < numTokens; i++) {
-    switch (tokens[i].type)
-    {
-      case TOKEN_PLUS:
-        printf("[TOKEN_PLUS] ");
-        break;
-      case TOKEN_MINUS:
-        printf("[TOKEN_MINUS] ");
-        break;
-      case TOKEN_ASTERISK:
-        printf("[TOKEN_ASTERISK] ");
-        break;
-      case TOKEN_SLASH:
-        printf("[TOKEN_SLASH] ");
-        break;
-      case TOKEN_PERCENT:
-        printf("[TOKEN_PERCENT] ");
-        break;
-      case TOKEN_INT_LITERAL:
-        printf("[TOKEN_INT_LITERAL (%s)] ", tokens[i].value);
-        break;
-      case TOKEN_FLOAT_LITERAL:
-        printf("[TOKEN_FLOAT_LITERAL (%s)] ", tokens[i].value);
-        break;
-      case TOKEN_ASSIGNMENT:
-        printf("[TOKEN_ASSIGNMENT] ");
-        break;
-      case TOKEN_IDENTIFIER:
-        printf("[TOKEN_IDENTIFIER (%s)] ", tokens[i].value);
-        break;
-      case TOKEN_STRING:
-        printf("[TOKEN_STRING (%s)] ", tokens[i].value);
-        break;
-      case TOKEN_LPARENT:
-        printf("[TOKEN_LPARENT] ");
-        break;
-      case TOKEN_RPARENT:
-        printf("[TOKEN_RPARENT] ");
-        break;
-      case TOKEN_IF:
-        printf("[TOKEN_IF] ");
-        break;
-      case TOKEN_WHILE:
-        printf("[TOKEN_WHILE] ");
-        break;
-      case TOKEN_FOR:
-        printf("[TOKEN_FOR] ");
-        break;
-      case TOKEN_ELSE:
-        printf("[TOKEN_ELSE] ");
-        break;
-      case TOKEN_LBRACKET:
-        printf("[TOKEN_LBRACKET] ");
-        break;
-      case TOKEN_RBRACKET:
-        printf("[TOKEN_RBRACKET] ");
-        break;
-      case TOKEN_EQUAL:
-        printf("[TOKEN_EQUAL] ");
-        break;
-      case TOKEN_NOT_EQUAL:
-        printf("[TOKEN_NOT_EQUAL] ");
-        break;
-      case TOKEN_LESS:
-        printf("[TOKEN_LESS] ");
-        break;
-      case TOKEN_LESS_EQUAL:
-        printf("[TOKEN_LESS_EQUAL] ");
-        break;
-      case TOKEN_GREATER:
-        printf("[TOKEN_GREATER] ");
-        break;
-      case TOKEN_GREATER_EQUAL:
-        printf("[TOKEN_GREATER_EQUAL] ");
-        break;
-      case TOKEN_AND:
-        printf("[TOKEN_AND] ");
-        break;
-      case TOKEN_OR:
-        printf("[TOKEN_OR] ");
-        break;
-      case TOKEN_EXCLAMATION:
-        printf("[TOKEN_EXCLAMATION] ");
-        break;
-      case TOKEN_EOF:
-        printf("[TOKEN_EOF] ");
-        break;
-      case TOKEN_EOL:
-        printf("[TOKEN_EOL] ");
-        break;
-      case TOKEN_COLON:
-        printf("[TOKEN_COLON] ");
-        break;
-
-      default:
-        printf("[UNKNOWN TOKEN] ");
-        break;
-    }
-  }
-  printf("\n");
-}
-
-void Lexer(char *code)
+int Lexer(char *code)
 {
   int current_line = 1;
 
@@ -497,5 +396,5 @@ void Lexer(char *code)
 
   PrintTokens(tokens, current_token); // DEBUG
 
-  //interpreter(tokens, current_token, lineNum); OLD
+  Interpreter(tokens, current_token);
 }

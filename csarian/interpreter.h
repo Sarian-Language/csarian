@@ -1,6 +1,6 @@
-// parser.h
-#ifndef PARSER_H
-#define PARSER_H
+// interpreter
+#ifndef INTERPRETER_H
+#define INTERPRETER_H
 
 #include <stddef.h>
 

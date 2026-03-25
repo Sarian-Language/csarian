@@ -4,10 +4,19 @@
 
 #include <stdbool.h>
 
-// Global vars
+typedef enum
+{
+  INT,
+  FLOAT,
+  STRING,
+  INVALID
+} VariableType;
+
+// Global variable
 typedef struct
 {
-    char* key;      // Variable name
+    char* key;  // Variable name
+    VariableType type;
     void* value;
 } GlobalVariable;
 
@@ -43,7 +52,9 @@ typedef enum
     TOKEN_AND,
     TOKEN_OR,
     TOKEN_EXCLAMATION,
-    TOKEN_COLON
+    TOKEN_COLON,
+    TOKEN_DBG_PRINT,
+    TOKEN_NULL
 } TokenType;
 
 // Precedences

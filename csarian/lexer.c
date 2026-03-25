@@ -9,7 +9,7 @@
 
 #include "definitions.h"
 #include "error.h"
-#include "debug.h"
+#include "debug/debug.h"
 #include "interpreter.h"
 
 int current_token;
@@ -56,13 +56,14 @@ int Lexer(char *code)
       break;
     }
 
-    if (current_char == '\n')
+    else if (current_char == '\n')
     {
+      current_line++;
       AddToken(TOKEN_EOL, NULL, NO_PRECEDENCE);
     }
 
-    // Comments
-    if (current_char == '/')
+    // Comments / TOKEN_SLASH
+    else if (current_char == '/')
     {
       if (next_char == '/')
       {
@@ -79,10 +80,14 @@ int Lexer(char *code)
         i -= 2; // -2 so we can add the EOL/EOF token.
         continue;
       }
+      else 
+      {
+        AddToken(TOKEN_SLASH, NULL, SLASH_PRECEDENCE);
+      }
     }
 
     // Strings
-    if (current_char == '"' || current_char == '\'')
+    else if (current_char == '"' || current_char == '\'')
     {
       size_t string_len = 16;
 
@@ -133,7 +138,7 @@ int Lexer(char *code)
     }
 
     // Identifiers / Keywords
-    if (isalpha(current_char))
+    else if (isalpha(current_char) || current_char == '_')
     {
       size_t identifier_len = 16;
 
@@ -149,7 +154,7 @@ int Lexer(char *code)
 
       for (size_t j = i + 1; j <= code_len; j++) // Iterate until we find the end of the identifier.
       {
-        if (isalpha(code[j]) || isdigit(code[j]))
+        if (isalpha(code[j]) || isdigit(code[j]) || code[j] == '_')
         {
           if (pos + 1 >= identifier_len)
           {
@@ -173,30 +178,14 @@ int Lexer(char *code)
           i = j - 1;
 
           // Keywords
-          if (strcmp(identifier, "and") == 0)
-          {
-            AddToken(TOKEN_AND, NULL, NO_PRECEDENCE);
-          }
-          else if (strcmp(identifier, "or") == 0)
-          {
-            AddToken(TOKEN_OR, NULL, NO_PRECEDENCE);
-          }
-          else if (strcmp(identifier, "if") == 0)
-          {
-            AddToken(TOKEN_IF, NULL, NO_PRECEDENCE);
-          }
-          else if (strcmp(identifier, "else") == 0)
-          {
-            AddToken(TOKEN_ELSE, NULL, NO_PRECEDENCE);
-          }
-          else if (strcmp(identifier, "while") == 0)
-          {
-            AddToken(TOKEN_ELSE, NULL, NO_PRECEDENCE);
-          }
-          else if (strcmp(identifier, "for") == 0)
-          {
-            AddToken(TOKEN_ELSE, NULL, NO_PRECEDENCE);
-          }
+          if (strcmp(identifier, "and") == 0) {AddToken(TOKEN_AND, NULL, NO_PRECEDENCE);}
+          else if (strcmp(identifier, "or") == 0) {AddToken(TOKEN_OR, NULL, NO_PRECEDENCE);}
+          else if (strcmp(identifier, "if") == 0) {AddToken(TOKEN_IF, NULL, NO_PRECEDENCE);}
+          else if (strcmp(identifier, "else") == 0) {AddToken(TOKEN_ELSE, NULL, NO_PRECEDENCE);}
+          else if (strcmp(identifier, "while") == 0) {AddToken(TOKEN_WHILE, NULL, NO_PRECEDENCE);}
+          else if (strcmp(identifier, "for") == 0) {AddToken(TOKEN_FOR, NULL, NO_PRECEDENCE);}
+          else if (strcmp(identifier, "printd") == 0) {AddToken(TOKEN_DBG_PRINT, NULL, NO_PRECEDENCE);}
+
           // Not a keyword, adding normal identifier token.
           else 
           {
@@ -212,7 +201,7 @@ int Lexer(char *code)
     }
 
     // Numeric
-    if (isdigit(current_char))
+    else if (isdigit(current_char))
     {
       bool is_float = false;
       size_t number_len = 16;
@@ -250,6 +239,8 @@ int Lexer(char *code)
         }
         else if (code[j] == '.') // Detects decimal number
         {
+          if (is_float == true) {error(current_line, SYNTAX_INVALID, "More than one decimal point.");}
+
           size_t new_len = number_len * 2;
           is_float = true;
 
@@ -290,38 +281,33 @@ int Lexer(char *code)
     }
 
     // COLON
-    if (current_char == ':')
+    else if (current_char == ':')
     {
       AddToken(TOKEN_COLON, NULL, NO_PRECEDENCE);
     }
 
     // PLUS operator
-    if (current_char == '+')
+    else if (current_char == '+')
     {
       AddToken(TOKEN_PLUS, NULL, PLUS_PRECEDENCE);
     }
     // MINUS operator
-    if (current_char == '-')
+    else if (current_char == '-')
     {
       AddToken(TOKEN_MINUS, NULL, MINUS_PRECEDENCE);
     }
     // PERCENT operator
-    if (current_char == '%')
+    else if (current_char == '%')
     {
       AddToken(TOKEN_PERCENT, NULL, PERCENT_PRECEDENCE);
     }
-    // SLASH operator
-    if (current_char == '/')
-    {
-      AddToken(TOKEN_SLASH, NULL, SLASH_PRECEDENCE);
-    }
     // ASTERISK operator
-    if (current_char == '*')
+    else if (current_char == '*')
     {
       AddToken(TOKEN_ASTERISK, NULL, ASTERISK_PRECEDENCE);
     }
     // ASSIGNMENT / EQUAL operator
-    if (current_char == '=')
+    else if (current_char == '=')
     {
       if (next_char != '=')
       {
@@ -334,7 +320,7 @@ int Lexer(char *code)
       }
     }
     // GREATER / GREATER OR EQUAL operator
-    if (current_char == '>')
+    else if (current_char == '>')
     {
       if (next_char != '=')
       {
@@ -347,7 +333,7 @@ int Lexer(char *code)
       }
     }
     // LESS / LESS OR EQUAL operator
-    if (current_char == '<')
+    else if (current_char == '<')
     {
       if (next_char != '=')
       {
@@ -360,7 +346,7 @@ int Lexer(char *code)
       }
     }
     // EXCLAMATION MARK / NOT EQUAL operator
-    if (current_char == '!')
+    else if (current_char == '!')
     {
       if (next_char != '=')
       {
@@ -374,27 +360,41 @@ int Lexer(char *code)
     }
 
     // Parents
-    if (current_char == '(')
+    else if (current_char == '(')
     {
       AddToken(TOKEN_LPARENT, NULL, NO_PRECEDENCE);
     }
-    if (current_char == ')')
+    else if (current_char == ')')
     {
       AddToken(TOKEN_RPARENT, NULL, NO_PRECEDENCE);
     }
 
     // Brackets
-    if (current_char == '{')
+    else if (current_char == '{')
     {
       AddToken(TOKEN_LBRACKET, NULL, NO_PRECEDENCE);
     }
-    if (current_char == '}')
+    else if (current_char == '}')
     {
       AddToken(TOKEN_RBRACKET, NULL, NO_PRECEDENCE);
     }
+
+    else if (current_char == ' ')
+    {
+      // Ignore
+    }
+
+    else
+    {
+      char msg[64];
+      sprintf(msg, "Invalid character 'int: %d'.", current_char);
+      error(current_line, SYNTAX_INVALID, msg);
+    }
   }
 
-  PrintTokens(tokens, current_token); // DEBUG
+  // PrintTokens(tokens, current_token); // DEBUG
 
   Interpreter(tokens, current_token);
+
+  return 0;
 }

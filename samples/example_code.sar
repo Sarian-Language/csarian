@@ -1,0 +1,25 @@
+// Comments are made with '//'
+
+x = 5
+y = 2
+
+printd("Result of x + y:")
+printd(x + y)
+
+x = 5
+y = 5
+
+printd("Result of x * y:")
+printd(x * y)
+
+x = 100
+y = 2
+
+printd("Result of x / y:")
+printd(x / y)
+
+x = "Hello "
+y = "World"
+
+printd("Result of strings x + y:")
+printd(x + y)

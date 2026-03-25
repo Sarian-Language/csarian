@@ -35,6 +35,12 @@ int error(int line, int error_type, char *error_message)
         case TYPE_INVALID_OPERANDS:
             fprintf(stderr, "\nTYPE_INVALID_OPERANDS Error (%d), at line: %d\n%s\n",error_type,line,error_message);
             exit(1);
+        case SYNTAX_INVALID:
+            fprintf(stderr, "\nSYNTAX_INVALID Error (%d), at line: %d\n%s\n",error_type,line,error_message);
+            exit(1);
+        case SYNTAX_INCOMPLETE_ASSIGNMENT:
+            fprintf(stderr, "\nSYNTAX_INCOMPLETE_ASSIGNMENT Error (%d), at line: %d\n%s\n",error_type,line,error_message);
+            exit(1);
 
         default:
             fprintf(stderr, "\n[!] Unknown error type: %d\n",error_type);

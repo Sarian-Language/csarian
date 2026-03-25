@@ -2,7 +2,7 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include "definitions.h"
+#include "../definitions.h"
 
 void PrintTokens(Token *tokens, int numTokens);
 

@@ -11,8 +11,10 @@ typedef enum
     MEM_REALLOC_FAILED,
 
     // --- Syntax errors (SYNTAX): ---
+    SYNTAX_INVALID,
     SYNTAX_INCOMPLETE_EXPRESSION,
     SYNTAX_INCOMPLETE_PARENT,
+    SYNTAX_INCOMPLETE_ASSIGNMENT,
 
     // --- Token errors (TOKENERR): ---
     TOKENERR_UNKNOWN_TOKEN,

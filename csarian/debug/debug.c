@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "definitions.h"
+#include "../definitions.h"
 
 void PrintTokens(Token *tokens, int numTokens) {
   for (int i = 0; i < numTokens; i++) {
@@ -95,6 +95,9 @@ void PrintTokens(Token *tokens, int numTokens) {
         break;
       case TOKEN_COLON:
         printf("[TOKEN_COLON] ");
+        break;
+      case TOKEN_DBG_PRINT:
+        printf("[TOKEN_DBG_PRINT] ");
         break;
 
       default:

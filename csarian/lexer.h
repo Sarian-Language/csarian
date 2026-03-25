@@ -6,6 +6,4 @@
 
 int Lexer(char *code);
 
-void PrintTokens(Token *tokens, int numTokens);
-
 #endif

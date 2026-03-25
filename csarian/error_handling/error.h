@@ -2,7 +2,7 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-// Error types
+// Error Types
 typedef enum
 {
     // --- Memory errors (MEM): ---

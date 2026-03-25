@@ -8,7 +8,7 @@
 #include <stdbool.h>
 
 #include "definitions.h"
-#include "error.h"
+#include "error_handling/error.h"
 #include "debug/debug.h"
 #include "interpreter.h"
 

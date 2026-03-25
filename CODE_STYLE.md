@@ -12,7 +12,7 @@ This document defines the preferred coding style for the **Sarian programming la
 
 ## 2. Braces Placement
 
-All opening and closing braces `{}` must be placed on **their own lines** as follows:
+All opening and closing braces `{}` must be placed on **their own lines** as follows, except code with only one line:
 
 ```c
 if (condition)

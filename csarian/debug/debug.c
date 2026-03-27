@@ -100,6 +100,9 @@ void PrintTokens(Token *tokens, int numTokens) {
       case TOKEN_DBG_PRINT:
         printf("[TOKEN_DBG_PRINT] ");
         break;
+      case TOKEN_FN:
+        printf("[TOKEN_FN] ");
+        break;
 
       default:
         printf("[UNKNOWN TOKEN] ");

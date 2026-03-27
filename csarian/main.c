@@ -1,3 +1,4 @@
+// main.c
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -42,8 +43,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    size_t bytesRead = fread(code, 1, (size_t)filesize, file);
-    if (bytesRead != (size_t)filesize)
+    size_t bytes_read = fread(code, 1, (size_t)filesize, file);
+    if (bytes_read != (size_t)filesize)
     {
         perror("[Main] Error reading file completely");
         free(code);

@@ -1,25 +1,12 @@
-// Comments are made with '//'
+i = 2
 
-x = 5
-y = 2
+fn function()
+{
+  printd(i + 2)
+}
 
-printd("Result of x + y:")
-printd(x + y)
+function()
 
-x = 5
-y = 5
+i = i + 7
 
-printd("Result of x * y:")
-printd(x * y)
-
-x = 100
-y = 2
-
-printd("Result of x / y:")
-printd(x / y)
-
-x = "Hello "
-y = "World"
-
-printd("Result of strings x + y:")
-printd(x + y)
+printd(i)

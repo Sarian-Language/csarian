@@ -1,4 +1,4 @@
-// binaryops.h
+// binary_operations.h
 #ifndef BINARYOPS_H
 #define BINARYOPS_H
 

@@ -1,3 +1,4 @@
+// binary_operations.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -32,10 +33,10 @@ Token BinaryOperation(Token *tokens, size_t line_num)
 
     if (variable.variable_index != -1)
     {
-      VariableType variable_type = token_type_to_variable_type(OPERAND_A, line_num);
+      VariableType variable_type = TokenTypeToVariableType(OPERAND_A, line_num);
       if (variable_type == INVALID) {error(line_num, SYNTAX_INVALID, "Cannot perform binary operation between operand type(s).");}
 
-      TokenType token_type = variable_type_to_token_type(variable_type);
+      TokenType token_type = VariableTypeToTokenType(variable_type);
       if (token_type == TOKEN_NULL) {error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");}
 
       OPERAND_A.type = token_type;
@@ -43,16 +44,17 @@ Token BinaryOperation(Token *tokens, size_t line_num)
     }
     else {error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier at binary operation.");}
   }
+  
   if (OPERAND_B.type == TOKEN_IDENTIFIER)
   {
     GetGlobalVariableResult variable = GetGlobalVariable(OPERAND_B.value);
 
     if (variable.variable_index != -1)
     {
-      VariableType variable_type = token_type_to_variable_type(OPERAND_B, line_num);
+      VariableType variable_type = TokenTypeToVariableType(OPERAND_B, line_num);
       if (variable_type == INVALID) {error(line_num, SYNTAX_INVALID, "Cannot perform binary operation between operand type(s).");}
 
-      TokenType token_type = variable_type_to_token_type(variable_type);
+      TokenType token_type = VariableTypeToTokenType(variable_type);
       if (token_type == TOKEN_NULL) {error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");}
 
       OPERAND_B.type = token_type;
@@ -201,6 +203,34 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, size_t line_num)
   result.type = TOKEN_NULL; result.value = NULL; result.precedence = NO_PRECEDENCE;
 
   Token operation[3];
+
+  // If there's no operation we return the input
+  if (tokens_count == 2)
+  {
+    if (IS_VALID_BINARY_OPERAND(tokens[0].type))
+    {
+      if (tokens[0].type == TOKEN_IDENTIFIER)
+      {
+        GetGlobalVariableResult variable = GetGlobalVariable(tokens[0].value);
+
+        if (variable.variable_index != -1)
+        {
+          result.type = VariableTypeToTokenType(variable.variable_type);
+          result.value = variable.variable_value;
+          result.precedence = NO_PRECEDENCE;
+        }
+        else {error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");}
+      }
+      else
+      {
+        result.type = tokens[0].type;
+        result.value = tokens[0].value;
+        result.precedence = tokens[0].precedence;
+      }
+    }
+    else {error(line_num, SYNTAX_INVALID, "Incomplete binary operation or invalid input (binary_operations).");}
+
+  }
 
   size_t i;
   for (i = 0; i < tokens_count; i++)

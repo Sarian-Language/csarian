@@ -185,6 +185,7 @@ int Lexer(char *code)
           else if (strcmp(identifier, "while") == 0) {AddToken(TOKEN_WHILE, NULL, NO_PRECEDENCE);}
           else if (strcmp(identifier, "for") == 0) {AddToken(TOKEN_FOR, NULL, NO_PRECEDENCE);}
           else if (strcmp(identifier, "printd") == 0) {AddToken(TOKEN_DBG_PRINT, NULL, NO_PRECEDENCE);}
+          else if (strcmp(identifier, "fn") == 0) {AddToken(TOKEN_FN, NULL, NO_PRECEDENCE);}
 
           // Not a keyword, adding normal identifier token.
           else 

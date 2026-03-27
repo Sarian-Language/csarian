@@ -3,6 +3,7 @@
 #define DEFINITIONS_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef enum
 {
@@ -15,7 +16,7 @@ typedef enum
 // Global variable
 typedef struct
 {
-    char* key;  // Variable name
+    char *key;
     VariableType type;
     void* value;
 } GlobalVariable;
@@ -54,10 +55,11 @@ typedef enum
     TOKEN_EXCLAMATION,
     TOKEN_COLON,
     TOKEN_DBG_PRINT,
+    TOKEN_FN,
     TOKEN_NULL
 } TokenType;
 
-// Precedences
+// Token precedences
 typedef enum
 {
     NO_PRECEDENCE = 0,
@@ -78,6 +80,16 @@ typedef struct
     TokenPrecedence precedence;
 } Token;
 
+// Function struct
+typedef struct
+{
+  char *key;
+  
+  size_t start;
+  size_t end;
+} Function;
+
+// Macros
 #define IS_BINARY_OPERATOR(t) ((t) == TOKEN_PLUS || (t) == TOKEN_MINUS || (t) == TOKEN_ASTERISK || \
                                (t) == TOKEN_SLASH || (t) == TOKEN_PERCENT)
 

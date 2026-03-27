@@ -1,13 +1,16 @@
+// interpreter.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 
+#include "debug/debug.h"
 #include "definitions.h"
 #include "binary_operations/binary_operations.h"
 #include "error_handling/error.h"
 #include "binary_operations/binary_operations.h"
 #include "global_vars/global_vars.h"
+#include "functions/fn.h"
 
 #define PREVIOUS_TOKEN tokens[i - 1]
 #define CURRENT_TOKEN tokens[i]
@@ -15,8 +18,13 @@
 #define NEXT_TOKEN_2 tokens[i + 2]
 #define NEXT_TOKEN_3 tokens[i + 3]
 
-// Other functions
-VariableType token_type_to_variable_type(Token token, size_t line_num)
+#define J_PREVIOUS_TOKEN tokens[j - 1]
+#define J_CURRENT_TOKEN tokens[j]
+#define J_NEXT_TOKEN_1 tokens[j + 1]
+#define J_NEXT_TOKEN_2 tokens[j + 2]
+#define J_NEXT_TOKEN_3 tokens[j + 3]
+
+VariableType TokenTypeToVariableType(Token token, size_t line_num)
 {
   VariableType result;
   GetGlobalVariableResult variable_result;
@@ -47,7 +55,7 @@ VariableType token_type_to_variable_type(Token token, size_t line_num)
   return result;
 }
 
-TokenType variable_type_to_token_type(VariableType type)
+TokenType VariableTypeToTokenType(VariableType type)
 {
   TokenType result;
 
@@ -104,7 +112,7 @@ ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_nu
     {
       for (size_t j = i + 1; j < tokens_count; j++)
       {
-        if (tokens[j].type == TOKEN_RPARENT)
+        if (J_CURRENT_TOKEN.type == TOKEN_RPARENT)
         {
           result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
           result->result_tokens[result->result_tokens_count].value = NULL;
@@ -114,13 +122,13 @@ ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_nu
           return result;
         }
 
-        else if (tokens[j].type == TOKEN_EOF) {error(line_num, SYNTAX_INCOMPLETE_PARENT, "Incomplete parents.");}
+        else if (J_CURRENT_TOKEN.type == TOKEN_EOF) {error(line_num, SYNTAX_INCOMPLETE_PARENT, "Incomplete parents.");}
 
         else 
         {
-          result->result_tokens[result->result_tokens_count].type = tokens[j].type;
-          result->result_tokens[result->result_tokens_count].value = tokens[j].value;
-          result->result_tokens[result->result_tokens_count].precedence = tokens[j].precedence;
+          result->result_tokens[result->result_tokens_count].type = J_CURRENT_TOKEN.type;
+          result->result_tokens[result->result_tokens_count].value = J_CURRENT_TOKEN.value;
+          result->result_tokens[result->result_tokens_count].precedence = J_CURRENT_TOKEN.precedence;
           result->result_tokens_count++;
 
           Token *tmp = realloc(result->result_tokens, (result_tokens_size + 1) * sizeof(Token));
@@ -141,13 +149,73 @@ ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_nu
   return result;
 }
 
-bool Comparison();
+ResultTokens *GetTokensUntilEOL(Token *tokens, size_t tokens_count, size_t line_num)
+{
+  ResultTokens *result = malloc(sizeof(ResultTokens));
+  if (!result) {error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() result.");}
+
+  result->result_tokens_count = 0;
+  size_t result_tokens_size = 1;
+
+  result->result_tokens = calloc(result_tokens_size, sizeof(Token));
+  if (!result->result_tokens) {error(line_num, MEM_CALLOC_FAILED, "Failed to calloc() result_tokens.");}
+
+  for (size_t i = 0; i < tokens_count; i++)
+  {
+    if (CURRENT_TOKEN.type == TOKEN_EOF)
+    {
+      result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
+      result->result_tokens[result->result_tokens_count].value = NULL;
+      result->result_tokens[result->result_tokens_count].precedence = NO_PRECEDENCE;
+      result->result_tokens_count++;
+
+      return result;
+    }
+
+    else if (CURRENT_TOKEN.type == TOKEN_EOL)
+    {
+      result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
+      result->result_tokens[result->result_tokens_count].value = NULL;
+      result->result_tokens[result->result_tokens_count].precedence = NO_PRECEDENCE;
+      result->result_tokens_count++;
+
+      return result;
+    }
+
+    else 
+    {
+      result->result_tokens[result->result_tokens_count].type = CURRENT_TOKEN.type;
+      result->result_tokens[result->result_tokens_count].value = CURRENT_TOKEN.value;
+      result->result_tokens[result->result_tokens_count].precedence = CURRENT_TOKEN.precedence;
+      result->result_tokens_count++;
+
+      Token *tmp = realloc(result->result_tokens, (result_tokens_size + 1) * sizeof(Token));
+      if (!tmp) {error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");}
+
+      result_tokens_size++;
+      result->result_tokens = tmp;
+    }
+  }
+
+  result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
+  result->result_tokens[result->result_tokens_count].value = NULL;
+  result->result_tokens[result->result_tokens_count].precedence = NO_PRECEDENCE;
+  result->result_tokens_count++;
+
+  return result;
+}
 
 int Interpreter(Token *tokens, size_t tokens_count)
 {
   InitGlobalVariables();
+  InitFunctions();
   
   size_t line_num = 1;
+
+  // For functions
+  bool in_function = false;
+  ssize_t block_end = -1;
+  ssize_t original_pos = -1;
 
   size_t i;
   for (i = 0; i < tokens_count; i++)
@@ -155,6 +223,88 @@ int Interpreter(Token *tokens, size_t tokens_count)
     if (CURRENT_TOKEN.type == TOKEN_EOL)
     {
       line_num++;
+    }
+
+    if (in_function == true)
+    {
+      if (i > block_end) // Check if we reached the end of the function
+      {
+        i = original_pos;
+
+        original_pos = -1;
+        in_function = false;
+        block_end = -1;
+
+        continue;
+      }
+    }
+
+    if (CURRENT_TOKEN.type == TOKEN_FN)
+    {
+      if (i + 1 <= tokens_count && NEXT_TOKEN_1.type == TOKEN_IDENTIFIER)
+      {
+        if (i + 2 <= tokens_count && NEXT_TOKEN_2.type == TOKEN_LPARENT)
+        {
+          ResultTokens *parent_tokens = GetParentTokens(&NEXT_TOKEN_2, tokens_count - (i + 2), line_num);
+
+          size_t fn_block_start = 0;
+          size_t fn_block_end = 0;
+
+          for (size_t j = parent_tokens->result_tokens_count + 3; j < tokens_count; j++)
+          {
+            if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+            {
+              if (fn_block_start == 0)
+              {
+                fn_block_start = j + 1;
+              }
+              else {error(line_num, SYNTAX_INVALID, "Nested brackets are not supported.");}
+            }
+
+            if (J_CURRENT_TOKEN.type == TOKEN_RBRACKET)
+            {
+              if (fn_block_end == 0)
+              {
+                fn_block_end = j - 1;
+                break;
+              }
+            }
+          }
+
+          AddFunction(NEXT_TOKEN_1.value, fn_block_start, fn_block_end);
+
+          i = fn_block_end + 1;
+          continue;
+        }
+        else {error(line_num, SYNTAX_INVALID, "Expected '('.");}
+      }
+      else {error(line_num, SYNTAX_INVALID, "Expected function name after 'fn'.");}
+    }
+
+    if (CURRENT_TOKEN.type == TOKEN_IDENTIFIER)
+    {
+      // Search for functions
+      int result = SearchFunction(CURRENT_TOKEN.value);
+
+      if (result != -1)
+      {
+        // Search for the function call end so we can
+        // jump after it after being done with the function.
+        for (size_t j = i; j < tokens_count; j++)
+        {
+          if (J_CURRENT_TOKEN.type == TOKEN_RPARENT)
+          {
+            original_pos = j;
+            break;
+          }
+        }
+
+        i = functions[result].start - 1;
+        block_end = functions[result].end;
+        in_function = true;
+
+        continue;
+      }
     }
 
     if (CURRENT_TOKEN.type == TOKEN_DBG_PRINT)
@@ -177,6 +327,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
 
             if (variable.variable_index != -1)
             {
+              printf("\nvariable found i, its value: %s\n",(char*)variable.variable_value);
               printf("%s\n",(char*)variable.variable_value);
             }
             else {fprintf(stderr, "Variable not found.\n");}
@@ -192,9 +343,10 @@ int Interpreter(Token *tokens, size_t tokens_count)
 
     if (CURRENT_TOKEN.type == TOKEN_ASSIGNMENT)
     {
-      if (i - 1 > 0 && i + 1 < tokens_count) // Make sure we don't underflow/overflow
+      if (i - 1 >= 0 && i + 1 < tokens_count) // Make sure we don't underflow/overflow
       {
         int variable_index;
+
         if (PREVIOUS_TOKEN.type == TOKEN_IDENTIFIER)
         {
           variable_index = GetGlobalVariable(PREVIOUS_TOKEN.value).variable_index;
@@ -204,19 +356,24 @@ int Interpreter(Token *tokens, size_t tokens_count)
         // Variable exists
         if (variable_index != -1)
         {
-          VariableType variable_type = token_type_to_variable_type(NEXT_TOKEN_1, line_num);
+          // Parse binary operation if there's one.
+          ResultTokens result_tokens = *GetTokensUntilEOL(&NEXT_TOKEN_1, tokens_count - (i + 1), line_num);
+          Token binary_operation_result = ParseBinaryOperation(result_tokens.result_tokens, result_tokens.result_tokens_count, line_num);
+
+          VariableType variable_type = TokenTypeToVariableType(binary_operation_result, line_num);
 
           if (variable_type != INVALID)
           {
             global_variables[variable_index].type = variable_type;
-            global_variables[variable_index].value = NEXT_TOKEN_1.value;
+            global_variables[variable_index].value = binary_operation_result.value;
           }
           else {error(line_num, TYPE_INVALID, "Invalid variable value.");}
         }
+
         // Variable doesn't exist
         else
         {
-          VariableType variable_type = token_type_to_variable_type(NEXT_TOKEN_1, line_num);
+          VariableType variable_type = TokenTypeToVariableType(NEXT_TOKEN_1, line_num);
 
           if (variable_type != INVALID)
           {
@@ -235,10 +392,11 @@ int Interpreter(Token *tokens, size_t tokens_count)
           else {error(line_num, TYPE_INVALID, "Invalid variable value.");}
         }
       }
-      else {error(line_num, SYNTAX_INCOMPLETE_ASSIGNMENT, "Incomplete assignment (=).");}
+      else {error(line_num, SYNTAX_INVALID, "Incomplete assignment (=).");}
     }
   }
 
   TerminateGlobalVariables();
+  TerminateFunctions();
   return 0;
 }

@@ -12,9 +12,9 @@ size_t global_variables_size;
 
 void InitGlobalVariables()
 {
-  global_variables = calloc(32, sizeof(GlobalVariable));
   global_variables_size = 32;
   global_variables_count = 0;
+  global_variables = calloc(global_variables_size, sizeof(GlobalVariable));
 }
 
 void TerminateGlobalVariables()

@@ -327,7 +327,6 @@ int Interpreter(Token *tokens, size_t tokens_count)
 
             if (variable.variable_index != -1)
             {
-              printf("\nvariable found i, its value: %s\n",(char*)variable.variable_value);
               printf("%s\n",(char*)variable.variable_value);
             }
             else {fprintf(stderr, "Variable not found.\n");}

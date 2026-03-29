@@ -42,7 +42,8 @@ VariableType TokenTypeToVariableType(Token token, size_t line_num)
       break;
     case TOKEN_IDENTIFIER:
       variable_result = GetGlobalVariable(token.value);
-      if (variable_result.variable_index == -1) {error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");}
+      if (variable_result.variable_index == -1)
+        error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
 
       result = variable_result.variable_type;
       break;
@@ -88,18 +89,29 @@ typedef struct
 ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_num)
 {
   ResultTokens *result = malloc(sizeof(ResultTokens));
-  if (!result) {error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() result.");}
+  if (!result) error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() result.");
 
   result->result_tokens_count = 0;
-  size_t result_tokens_size = 1;
+  size_t result_tokens_size = 16;
 
   result->result_tokens = calloc(result_tokens_size, sizeof(Token));
-  if (!result->result_tokens) {error(line_num, MEM_CALLOC_FAILED, "Failed to calloc() result_tokens.");}
+  if (!result->result_tokens) error(line_num, MEM_CALLOC_FAILED, "Failed to calloc() result_tokens.");
 
   for (size_t i = 0; i < tokens_count; i++)
   {
     if (CURRENT_TOKEN.type == TOKEN_EOF)
     {
+      if (result->result_tokens_count > result_tokens_size)
+      {
+        size_t new_size = result_tokens_size + 1;
+
+        Token *tmp = realloc(result->result_tokens, (new_size) * sizeof(Token));
+        if (!tmp) error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");
+
+        result_tokens_size++;
+        result->result_tokens = tmp;
+      }
+
       result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
       result->result_tokens[result->result_tokens_count].value = NULL;
       result->result_tokens[result->result_tokens_count].precedence = NO_PRECEDENCE;
@@ -112,8 +124,22 @@ ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_nu
     {
       for (size_t j = i + 1; j < tokens_count; j++)
       {
-        if (J_CURRENT_TOKEN.type == TOKEN_RPARENT)
+        if (J_CURRENT_TOKEN.type == TOKEN_LPARENT)
+          error(line_num, SYNTAX_INCOMPLETE_PARENT, "Expected ')'.");
+
+        else if (J_CURRENT_TOKEN.type == TOKEN_RPARENT)
         {
+          if (result->result_tokens_count >= result_tokens_size)
+          {
+            size_t new_size = result_tokens_size + 1;
+
+            Token *tmp = realloc(result->result_tokens, (new_size) * sizeof(Token));
+            if (!tmp) error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");
+
+            result_tokens_size++;
+            result->result_tokens = tmp;
+          }
+
           result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
           result->result_tokens[result->result_tokens_count].value = NULL;
           result->result_tokens[result->result_tokens_count].precedence = NO_PRECEDENCE;
@@ -122,23 +148,40 @@ ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_nu
           return result;
         }
 
-        else if (J_CURRENT_TOKEN.type == TOKEN_EOF) {error(line_num, SYNTAX_INCOMPLETE_PARENT, "Incomplete parents.");}
+        else if (J_CURRENT_TOKEN.type == TOKEN_EOF) 
+          error(line_num, SYNTAX_INCOMPLETE_PARENT, "Incomplete parents.");
 
         else 
         {
+          if (result->result_tokens_count >= result_tokens_size)
+          {
+            size_t new_size = result_tokens_size * 2;
+
+            Token *tmp = realloc(result->result_tokens, (new_size) * sizeof(Token));
+            if (!tmp) error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");
+
+            result_tokens_size *= 2;
+            result->result_tokens = tmp;
+          }
+
           result->result_tokens[result->result_tokens_count].type = J_CURRENT_TOKEN.type;
           result->result_tokens[result->result_tokens_count].value = J_CURRENT_TOKEN.value;
           result->result_tokens[result->result_tokens_count].precedence = J_CURRENT_TOKEN.precedence;
           result->result_tokens_count++;
-
-          Token *tmp = realloc(result->result_tokens, (result_tokens_size + 1) * sizeof(Token));
-          if (!tmp) {error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");}
-
-          result_tokens_size++;
-          result->result_tokens = tmp;
         }
       }
     }
+  }
+
+  if (result->result_tokens_count >= result_tokens_size)
+  {
+    size_t new_size = result_tokens_size + 1;
+
+    Token *tmp = realloc(result->result_tokens, (new_size) * sizeof(Token));
+    if (!tmp) error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");
+
+    result_tokens_size++;
+    result->result_tokens = tmp;
   }
 
   result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
@@ -152,18 +195,29 @@ ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_nu
 ResultTokens *GetTokensUntilEOL(Token *tokens, size_t tokens_count, size_t line_num)
 {
   ResultTokens *result = malloc(sizeof(ResultTokens));
-  if (!result) {error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() result.");}
+  if (!result) error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() result.");
 
   result->result_tokens_count = 0;
-  size_t result_tokens_size = 1;
+  size_t result_tokens_size = 16;
 
   result->result_tokens = calloc(result_tokens_size, sizeof(Token));
-  if (!result->result_tokens) {error(line_num, MEM_CALLOC_FAILED, "Failed to calloc() result_tokens.");}
+  if (!result->result_tokens) error(line_num, MEM_CALLOC_FAILED, "Failed to calloc() result_tokens.");
 
   for (size_t i = 0; i < tokens_count; i++)
   {
     if (CURRENT_TOKEN.type == TOKEN_EOF)
     {
+      if (result->result_tokens_count >= result_tokens_size)
+      {
+        size_t new_size = result_tokens_size + 1;
+
+        Token *tmp = realloc(result->result_tokens, (new_size) * sizeof(Token));
+        if (!tmp) error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");
+
+        result_tokens_size++;
+        result->result_tokens = tmp;
+      }
+
       result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
       result->result_tokens[result->result_tokens_count].value = NULL;
       result->result_tokens[result->result_tokens_count].precedence = NO_PRECEDENCE;
@@ -174,6 +228,17 @@ ResultTokens *GetTokensUntilEOL(Token *tokens, size_t tokens_count, size_t line_
 
     else if (CURRENT_TOKEN.type == TOKEN_EOL)
     {
+      if (result->result_tokens_count >= result_tokens_size)
+      {
+        size_t new_size = result_tokens_size + 1;
+
+        Token *tmp = realloc(result->result_tokens, (new_size) * sizeof(Token));
+        if (!tmp) error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");
+
+        result_tokens_size++;
+        result->result_tokens = tmp;
+      }
+
       result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
       result->result_tokens[result->result_tokens_count].value = NULL;
       result->result_tokens[result->result_tokens_count].precedence = NO_PRECEDENCE;
@@ -184,16 +249,21 @@ ResultTokens *GetTokensUntilEOL(Token *tokens, size_t tokens_count, size_t line_
 
     else 
     {
+      if (result->result_tokens_count >= result_tokens_size)
+      {
+        size_t new_size = result_tokens_size * 2;
+
+        Token *tmp = realloc(result->result_tokens, (new_size) * sizeof(Token));
+        if (!tmp) error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");
+
+        result_tokens_size *= 2;
+        result->result_tokens = tmp;
+      }
+
       result->result_tokens[result->result_tokens_count].type = CURRENT_TOKEN.type;
       result->result_tokens[result->result_tokens_count].value = CURRENT_TOKEN.value;
       result->result_tokens[result->result_tokens_count].precedence = CURRENT_TOKEN.precedence;
       result->result_tokens_count++;
-
-      Token *tmp = realloc(result->result_tokens, (result_tokens_size + 1) * sizeof(Token));
-      if (!tmp) {error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");}
-
-      result_tokens_size++;
-      result->result_tokens = tmp;
     }
   }
 
@@ -250,7 +320,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
           size_t fn_block_start = 0;
           size_t fn_block_end = 0;
 
-          for (size_t j = parent_tokens->result_tokens_count + 3; j < tokens_count; j++)
+          for (size_t j = i + 2 + parent_tokens->result_tokens_count + 1; j < tokens_count; j++)
           {
             if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
             {
@@ -258,7 +328,8 @@ int Interpreter(Token *tokens, size_t tokens_count)
               {
                 fn_block_start = j + 1;
               }
-              else {error(line_num, SYNTAX_INVALID, "Nested brackets are not supported.");}
+              else 
+                error(line_num, SYNTAX_INVALID, "Nested brackets are not supported.");
             }
 
             if (J_CURRENT_TOKEN.type == TOKEN_RBRACKET)
@@ -276,9 +347,11 @@ int Interpreter(Token *tokens, size_t tokens_count)
           i = fn_block_end + 1;
           continue;
         }
-        else {error(line_num, SYNTAX_INVALID, "Expected '('.");}
+        else 
+          error(line_num, SYNTAX_INVALID, "Expected '('.");
       }
-      else {error(line_num, SYNTAX_INVALID, "Expected function name after 'fn'.");}
+      else 
+        error(line_num, SYNTAX_INVALID, "Expected function name after 'fn'.");
     }
 
     if (CURRENT_TOKEN.type == TOKEN_IDENTIFIER)
@@ -327,17 +400,16 @@ int Interpreter(Token *tokens, size_t tokens_count)
 
             if (variable.variable_index != -1)
             {
-              printf("\nvariable found i, its value: %s\n",(char*)variable.variable_value);
               printf("%s\n",(char*)variable.variable_value);
             }
-            else {fprintf(stderr, "Variable not found.\n");}
+            else
+              fprintf(stderr, "Variable not found.\n");
           }
-          else {printf("%s\n",print_tokens.result_tokens->value);}
+          else
+            printf("%s\n",print_tokens.result_tokens->value);
         }
         else
-        {
           printf("\n");
-        }
       }
     }
 
@@ -351,13 +423,15 @@ int Interpreter(Token *tokens, size_t tokens_count)
         {
           variable_index = GetGlobalVariable(PREVIOUS_TOKEN.value).variable_index;
         }
-        else {error(line_num, SYNTAX_INVALID, "Variable name is not an identifier.");}
+        else
+          error(line_num, SYNTAX_INVALID, "Expected identifier before '='.");
 
         // Variable exists
         if (variable_index != -1)
         {
           // Parse binary operation if there's one.
           ResultTokens result_tokens = *GetTokensUntilEOL(&NEXT_TOKEN_1, tokens_count - (i + 1), line_num);
+
           Token binary_operation_result = ParseBinaryOperation(result_tokens.result_tokens, result_tokens.result_tokens_count, line_num);
 
           VariableType variable_type = TokenTypeToVariableType(binary_operation_result, line_num);
@@ -367,32 +441,29 @@ int Interpreter(Token *tokens, size_t tokens_count)
             global_variables[variable_index].type = variable_type;
             global_variables[variable_index].value = binary_operation_result.value;
           }
-          else {error(line_num, TYPE_INVALID, "Invalid variable value.");}
+          else 
+            error(line_num, TYPE_INVALID, "Invalid variable value.");
         }
 
         // Variable doesn't exist
         else
         {
-          VariableType variable_type = TokenTypeToVariableType(NEXT_TOKEN_1, line_num);
+          ResultTokens result_tokens = *GetTokensUntilEOL(&NEXT_TOKEN_1, tokens_count - (i + 1), line_num);
+
+          Token binary_operation_result = ParseBinaryOperation(result_tokens.result_tokens, result_tokens.result_tokens_count, line_num);
+
+          VariableType variable_type = TokenTypeToVariableType(binary_operation_result, line_num);
 
           if (variable_type != INVALID)
           {
-            if (NEXT_TOKEN_1.type == TOKEN_IDENTIFIER)
-            {
-              GetGlobalVariableResult variable_result = GetGlobalVariable(NEXT_TOKEN_1.value);
-              if (variable_result.variable_index == -1) {error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier at variable assignment");}
-              
-              CreateGlobalVariable(PREVIOUS_TOKEN.value, variable_type, variable_result.variable_value);
-            }
-            else 
-            {
-              CreateGlobalVariable(PREVIOUS_TOKEN.value, variable_type, NEXT_TOKEN_1.value);
-            }
+            CreateGlobalVariable(PREVIOUS_TOKEN.value, variable_type, binary_operation_result.value);
           }
-          else {error(line_num, TYPE_INVALID, "Invalid variable value.");}
+          else 
+            error(line_num, TYPE_INVALID, "Invalid variable value.");
         }
       }
-      else {error(line_num, SYNTAX_INVALID, "Incomplete assignment (=).");}
+      else
+        error(line_num, SYNTAX_INVALID, "Incomplete assignment (=).");
     }
   }
 

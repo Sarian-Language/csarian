@@ -13,6 +13,7 @@ void InitFunctions()
 {
   functions_size = 32;
   functions_count = 0;
+
   functions = calloc(functions_size, sizeof(Function));
 }
 
@@ -24,11 +25,11 @@ void TerminateFunctions()
 
 void AddFunction(char *name, size_t start, size_t end)
 {
-  if (functions_count > functions_size)
+  if (functions_count >= functions_size)
   {
     size_t new_size = functions_size * 2;
 
-    Function *tmp = realloc(functions, sizeof(Function) * new_size);
+    Function *tmp = realloc(functions, new_size * sizeof(Function));
     functions = tmp;
 
     functions_size *= 2;

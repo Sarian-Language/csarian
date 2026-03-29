@@ -1,12 +1,40 @@
-i = 2
+printd("=== Sarian Language ===")
 
-fn function()
-{
-  printd(i + 2)
+// Variables
+x = 10
+y = 20
+z = x + y
+name = "Sarian"
+greeting = "Hello, " + name
+
+printd(x)           // 10
+printd(y)           // 20
+printd(z)           // 30
+printd(greeting)    // "Hello, Sarian"
+
+// Float variables
+pi = 3.14
+radius = 5.0
+area = pi * radius * radius
+printd("Area of circle: ")
+printd(area)
+
+// Reassign variable
+x = x + 5
+printd("New x: ")
+printd(x)
+
+// Functions
+fn say_hello() {
+    printd("Hello from function!")
 }
 
-function()
+fn add_numbers() {
+    sum = x + y
+    printd("Sum inside function: ")
+    printd(sum)
+}
 
-i = i + 7
-
-printd(i)
+// Function calls
+say_hello()
+add_numbers()

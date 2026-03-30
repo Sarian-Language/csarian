@@ -28,15 +28,15 @@ Token BinaryOperation(Token *tokens, size_t line_num)
     if (variable.variable_index != -1)
     {
       VariableType variable_type = TokenTypeToVariableType(OPERAND_A, line_num);
-      if (variable_type == INVALID) {error(line_num, SYNTAX_INVALID, "Cannot perform binary operation between operand type(s).");}
+      if (variable_type == INVALID) error(line_num, SYNTAX_INVALID, "Cannot perform binary operation between operand type(s).");
 
       TokenType token_type = VariableTypeToTokenType(variable_type);
-      if (token_type == TOKEN_NULL) {error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");}
+      if (token_type == TOKEN_NULL) error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
 
       OPERAND_A.type = token_type;
       OPERAND_A.value = (char*)variable.variable_value;
     }
-    else {error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier at binary operation.");}
+    else error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier at binary operation.");
   }
   
   if (OPERAND_B.type == TOKEN_IDENTIFIER)
@@ -54,7 +54,7 @@ Token BinaryOperation(Token *tokens, size_t line_num)
       OPERAND_B.type = token_type;
       OPERAND_B.value = (char*)variable.variable_value;
     }
-    else {error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier at binary operation.");}
+    else error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier at binary operation.");
   }
 
   // Strings
@@ -71,7 +71,7 @@ Token BinaryOperation(Token *tokens, size_t line_num)
           char *string2 = OPERAND_B.value;
 
           char *result = malloc(strlen(string1) + strlen(string2) + 1);
-          if (!result) {error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() result.");}
+          if (!result) error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() result.");
 
           result[0] = '\0';
 
@@ -96,7 +96,7 @@ Token BinaryOperation(Token *tokens, size_t line_num)
           unsigned int multiply_times = atoi(OPERAND_B.value);
 
           char *string1 = malloc(strlen(OPERAND_A.value) * multiply_times + 1);
-          if (!string1) {error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() string1.");}
+          if (!string1) error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() string1.");
 
           string1[0] = '\0';
 

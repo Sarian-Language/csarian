@@ -9,12 +9,6 @@
 #include "../global_vars/global_vars.h"
 #include "../interpreter.h"
 
-#define PREVIOUS_TOKEN tokens[i - 1]
-#define CURRENT_TOKEN tokens[i]
-#define NEXT_TOKEN_1 tokens[i + 1]
-#define NEXT_TOKEN_2 tokens[i + 2]
-#define NEXT_TOKEN_3 tokens[i + 3]
-
 #define OPERAND_A tokens[0]
 #define OPERATOR tokens[1]
 #define OPERAND_B tokens[2]
@@ -228,16 +222,18 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, size_t line_num)
         result.precedence = tokens[0].precedence;
       }
     }
-    else {error(line_num, SYNTAX_INVALID, "Incomplete binary operation or invalid input (binary_operations).");}
+    else 
+      error(line_num, SYNTAX_INVALID, "Incomplete binary operation or invalid input (binary_operations).");
 
   }
 
-  size_t i;
+  ssize_t i;
   for (i = 0; i < tokens_count; i++)
   {
     if (IS_BINARY_OPERATOR(CURRENT_TOKEN.type))
     {
-      if (IS_VALID_BINARY_OPERAND(PREVIOUS_TOKEN.type) && IS_VALID_BINARY_OPERAND(NEXT_TOKEN_1.type))
+      if (i - 1 > -1 && i + 1 <= tokens_count && IS_VALID_BINARY_OPERAND(PREVIOUS_TOKEN.type) 
+                                                && IS_VALID_BINARY_OPERAND(NEXT_TOKEN_1.type))
       {
         // Next operation has more precedence.
         if (NEXT_TOKEN_2.precedence > CURRENT_TOKEN.precedence)

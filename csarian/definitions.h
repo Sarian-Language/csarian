@@ -96,4 +96,16 @@ typedef struct
 #define IS_VALID_BINARY_OPERAND(t) ((t) == TOKEN_INT_LITERAL || (t) == TOKEN_FLOAT_LITERAL || (t) == TOKEN_STRING || \
                                     (t) == TOKEN_IDENTIFIER)
 
+#define PREVIOUS_TOKEN tokens[i - 1]
+#define CURRENT_TOKEN tokens[i]
+#define NEXT_TOKEN_1 tokens[i + 1]
+#define NEXT_TOKEN_2 tokens[i + 2]
+#define NEXT_TOKEN_3 tokens[i + 3]
+
+#define J_PREVIOUS_TOKEN tokens[j - 1]
+#define J_CURRENT_TOKEN tokens[j]
+#define J_NEXT_TOKEN_1 tokens[j + 1]
+#define J_NEXT_TOKEN_2 tokens[j + 2]
+#define J_NEXT_TOKEN_3 tokens[j + 3]
+
 #endif

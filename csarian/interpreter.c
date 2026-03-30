@@ -11,18 +11,7 @@
 #include "binary_operations/binary_operations.h"
 #include "global_vars/global_vars.h"
 #include "functions/fn.h"
-
-#define PREVIOUS_TOKEN tokens[i - 1]
-#define CURRENT_TOKEN tokens[i]
-#define NEXT_TOKEN_1 tokens[i + 1]
-#define NEXT_TOKEN_2 tokens[i + 2]
-#define NEXT_TOKEN_3 tokens[i + 3]
-
-#define J_PREVIOUS_TOKEN tokens[j - 1]
-#define J_CURRENT_TOKEN tokens[j]
-#define J_NEXT_TOKEN_1 tokens[j + 1]
-#define J_NEXT_TOKEN_2 tokens[j + 2]
-#define J_NEXT_TOKEN_3 tokens[j + 3]
+#include "interpreter.h"
 
 VariableType TokenTypeToVariableType(Token token, size_t line_num)
 {
@@ -79,12 +68,6 @@ TokenType VariableTypeToTokenType(VariableType type)
 
   return result;
 }
-
-typedef struct
-{
-  size_t result_tokens_count;
-  Token *result_tokens;
-} ResultTokens;
 
 ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_num)
 {
@@ -317,30 +300,39 @@ int Interpreter(Token *tokens, size_t tokens_count)
         {
           ResultTokens *parent_tokens = GetParentTokens(&NEXT_TOKEN_2, tokens_count - (i + 2), line_num);
 
-          size_t fn_block_start = 0;
-          size_t fn_block_end = 0;
+          ssize_t fn_block_start = -1;
+          ssize_t fn_block_end = -1;
+
+          size_t depth = 0;
 
           for (size_t j = i + 2 + parent_tokens->result_tokens_count + 1; j < tokens_count; j++)
           {
+            if (J_CURRENT_TOKEN.type == TOKEN_EOL)
+              line_num++;
+
             if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
             {
-              if (fn_block_start == 0)
+              if (fn_block_start == -1)
               {
                 fn_block_start = j + 1;
               }
-              else 
-                error(line_num, SYNTAX_INVALID, "Nested brackets are not supported.");
+              else
+                depth++;
             }
 
             if (J_CURRENT_TOKEN.type == TOKEN_RBRACKET)
             {
-              if (fn_block_end == 0)
+              if (depth == 0)
               {
                 fn_block_end = j - 1;
                 break;
               }
+              else
+                depth--;
             }
           }
+
+          if (fn_block_end == -1) error(line_num, SYNTAX_INCOMPLETE_BRACKET, "Incomplete brackets inside function.");
 
           AddFunction(NEXT_TOKEN_1.value, fn_block_start, fn_block_end);
 

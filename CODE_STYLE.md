@@ -17,16 +17,16 @@ All opening and closing braces `{}` must be placed on **their own lines** as fol
 ```c
 if (condition)
 {
-  	// code
+  // code
 }
 else
 {
-	// code
+  // code
 }
 
 void FunctionName()
 {
-	// code
+  // code
 }
 ```
 
@@ -87,7 +87,7 @@ void FunctionName()
     // This function advances position and handles escape sequences.
     void get_next_token()
     {
-    	...
+      ...
     }
     ```
 

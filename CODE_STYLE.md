@@ -6,7 +6,7 @@ This document defines the preferred coding style for the **Sarian programming la
 
 ## 1. Indentation
 
-* Use **2 spaces** for indentation.
+* **Use 2 spaces for indentation.**
 
 ---
 

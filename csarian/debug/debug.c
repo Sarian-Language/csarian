@@ -3,8 +3,10 @@
 
 #include "../definitions.h"
 
-void PrintTokens(Token *tokens, int numTokens) {
-  for (int i = 0; i < numTokens; i++) {
+void PrintTokens(Token *tokens, int numTokens)
+{
+  for (int i = 0; i < numTokens; i++)
+  {
     switch (tokens[i].type)
     {
       case TOKEN_PLUS:

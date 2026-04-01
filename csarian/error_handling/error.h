@@ -5,26 +5,26 @@
 // Error Types
 typedef enum
 {
-    // --- Memory errors (MEM): ---
-    MEM_MALLOC_FAILED,
-    MEM_CALLOC_FAILED,
-    MEM_REALLOC_FAILED,
+  // --- Memory errors (MEM): ---
+  MEM_MALLOC_FAILED,
+  MEM_CALLOC_FAILED,
+  MEM_REALLOC_FAILED,
 
-    // --- Syntax errors (SYNTAX): ---
-    SYNTAX_INVALID,
-    SYNTAX_INCOMPLETE_EXPRESSION,
-    SYNTAX_INCOMPLETE_PARENT,
-    SYNTAX_INCOMPLETE_BRACKET,
+  // --- Syntax errors (SYNTAX): ---
+  SYNTAX_INVALID,
+  SYNTAX_INCOMPLETE_EXPRESSION,
+  SYNTAX_INCOMPLETE_PARENT,
+  SYNTAX_INCOMPLETE_BRACKET,
 
-    // --- Token errors (TOKENERR): ---
-    TOKENERR_UNKNOWN_TOKEN,
+  // --- Token errors (TOKENERR): ---
+  TOKENERR_UNKNOWN_TOKEN,
 
-    // --- Identifiers errors (IDENTIFIER): ---
-    IDENTIFIER_UNKNOWN,
+  // --- Identifiers errors (IDENTIFIER): ---
+  IDENTIFIER_UNKNOWN,
 
-    // --- Type errors (TYPE): ---
-    TYPE_INVALID,
-    TYPE_INVALID_OPERANDS
+  // --- Type errors (TYPE): ---
+  TYPE_INVALID,
+  TYPE_INVALID_OPERANDS
 } ErrorType;
 
 int error(int line, int error_type, char *error_message);

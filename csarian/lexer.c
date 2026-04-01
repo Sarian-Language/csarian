@@ -1,15 +1,15 @@
 // lexer.c
 #include "lexer.h"
+#include <ctype.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <stdbool.h>
 
+#include "debug/debug.h"
 #include "definitions.h"
 #include "error_handling/error.h"
-#include "debug/debug.h"
 #include "interpreter.h"
 
 int current_token;
@@ -24,7 +24,7 @@ void InitTokens()
 }
 
 void AddToken(TokenType token_type, char *token_value, TokenPrecedence token_precedence)
-{ 
+{
   if (current_token + 1 >= tokens_len)
   {
     size_t new_len = tokens_len * 2;
@@ -50,7 +50,7 @@ int Lexer(char *code)
     char current_char = code[i];
     char next_char = code[i + 1];
 
-    if (i == code_len) // We reached the end of the code.
+    if (i == code_len)  // We reached the end of the code.
     {
       AddToken(TOKEN_EOF, NULL, NO_PRECEDENCE);
       break;
@@ -77,10 +77,10 @@ int Lexer(char *code)
           }
         }
 
-        i -= 2; // -2 so we can add the EOL/EOF token.
+        i -= 2;  // -2 so we can add the EOL/EOF token.
         continue;
       }
-      else 
+      else
       {
         AddToken(TOKEN_SLASH, NULL, SLASH_PRECEDENCE);
       }
@@ -152,7 +152,8 @@ int Lexer(char *code)
 
       size_t pos = 1;
 
-      for (size_t j = i + 1; j <= code_len; j++) // Iterate until we find the end of the identifier.
+      for (size_t j = i + 1; j <= code_len;
+           j++)  // Iterate until we find the end of the identifier.
       {
         if (isalpha(code[j]) || isdigit(code[j]) || code[j] == '_')
         {
@@ -178,17 +179,41 @@ int Lexer(char *code)
           i = j - 1;
 
           // Keywords
-          if (strcmp(identifier, "and") == 0) {AddToken(TOKEN_AND, NULL, NO_PRECEDENCE);}
-          else if (strcmp(identifier, "or") == 0) {AddToken(TOKEN_OR, NULL, NO_PRECEDENCE);}
-          else if (strcmp(identifier, "if") == 0) {AddToken(TOKEN_IF, NULL, NO_PRECEDENCE);}
-          else if (strcmp(identifier, "else") == 0) {AddToken(TOKEN_ELSE, NULL, NO_PRECEDENCE);}
-          else if (strcmp(identifier, "while") == 0) {AddToken(TOKEN_WHILE, NULL, NO_PRECEDENCE);}
-          else if (strcmp(identifier, "for") == 0) {AddToken(TOKEN_FOR, NULL, NO_PRECEDENCE);}
-          else if (strcmp(identifier, "printd") == 0) {AddToken(TOKEN_DBG_PRINT, NULL, NO_PRECEDENCE);}
-          else if (strcmp(identifier, "fn") == 0) {AddToken(TOKEN_FN, NULL, NO_PRECEDENCE);}
+          if (strcmp(identifier, "and") == 0)
+          {
+            AddToken(TOKEN_AND, NULL, NO_PRECEDENCE);
+          }
+          else if (strcmp(identifier, "or") == 0)
+          {
+            AddToken(TOKEN_OR, NULL, NO_PRECEDENCE);
+          }
+          else if (strcmp(identifier, "if") == 0)
+          {
+            AddToken(TOKEN_IF, NULL, NO_PRECEDENCE);
+          }
+          else if (strcmp(identifier, "else") == 0)
+          {
+            AddToken(TOKEN_ELSE, NULL, NO_PRECEDENCE);
+          }
+          else if (strcmp(identifier, "while") == 0)
+          {
+            AddToken(TOKEN_WHILE, NULL, NO_PRECEDENCE);
+          }
+          else if (strcmp(identifier, "for") == 0)
+          {
+            AddToken(TOKEN_FOR, NULL, NO_PRECEDENCE);
+          }
+          else if (strcmp(identifier, "printd") == 0)
+          {
+            AddToken(TOKEN_DBG_PRINT, NULL, NO_PRECEDENCE);
+          }
+          else if (strcmp(identifier, "fn") == 0)
+          {
+            AddToken(TOKEN_FN, NULL, NO_PRECEDENCE);
+          }
 
           // Not a keyword, adding normal identifier token.
-          else 
+          else
           {
             AddToken(TOKEN_IDENTIFIER, strdup(identifier), NO_PRECEDENCE);
           }
@@ -201,7 +226,7 @@ int Lexer(char *code)
       }
     }
 
-    // Numeric
+    // Numbers
     else if (isdigit(current_char))
     {
       bool is_float = false;
@@ -217,7 +242,7 @@ int Lexer(char *code)
 
       size_t pos = 1;
 
-      for (size_t j = i + 1; j <= code_len; j++) // Iterate until we find the end of the number
+      for (size_t j = i + 1; j <= code_len; j++)  // Iterate until we find the end of the number
       {
         if (isdigit(code[j]))
         {
@@ -238,9 +263,12 @@ int Lexer(char *code)
           number[pos++] = code[j];
           number[pos + 1] = '\0';
         }
-        else if (code[j] == '.') // Detects decimal number
+        else if (code[j] == '.')  // Detects decimal number
         {
-          if (is_float == true) {error(current_line, SYNTAX_INVALID, "More than one decimal point.");}
+          if (is_float == true)
+          {
+            error(current_line, SYNTAX_INVALID, "More than one decimal point.");
+          }
 
           size_t new_len = number_len * 2;
           is_float = true;
@@ -327,7 +355,7 @@ int Lexer(char *code)
       {
         AddToken(TOKEN_GREATER, NULL, NO_PRECEDENCE);
       }
-      else 
+      else
       {
         AddToken(TOKEN_GREATER_EQUAL, NULL, NO_PRECEDENCE);
         i++;
@@ -340,7 +368,7 @@ int Lexer(char *code)
       {
         AddToken(TOKEN_LESS, NULL, NO_PRECEDENCE);
       }
-      else 
+      else
       {
         AddToken(TOKEN_LESS_EQUAL, NULL, NO_PRECEDENCE);
         i++;
@@ -353,7 +381,7 @@ int Lexer(char *code)
       {
         AddToken(TOKEN_EXCLAMATION, NULL, NO_PRECEDENCE);
       }
-      else 
+      else
       {
         AddToken(TOKEN_NOT_EQUAL, NULL, NO_PRECEDENCE);
         i++;

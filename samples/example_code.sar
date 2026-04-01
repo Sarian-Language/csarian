@@ -33,6 +33,12 @@ fn add_numbers() {
     sum = x + y
     printd("Sum inside function: ")
     printd(sum)
+
+    // If statements
+    if (sum == 35)
+    {
+      printd("The sum result is 35")
+    }
 }
 
 // Function calls

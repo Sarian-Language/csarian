@@ -1,0 +1,49 @@
+BasedOnStyle: Google
+Standard: Latest
+
+# Indentation
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+ContinuationIndentWidth: 2
+
+# Line limit
+ColumnLimit: 100
+
+# Braces always on their own line
+BreakBeforeBraces: Allman
+
+# Parentheses and brackets without internal spaces
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+SpaceBeforeParens: ControlStatements
+
+# Avoid short functions in a single line
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# Do not align declarations or assignments
+AlignConsecutiveDeclarations: false
+AlignConsecutiveAssignments: false
+
+# Includes
+SortIncludes: true
+IncludeBlocks: Preserve
+
+# Switch
+IndentCaseLabels: true
+
+# Macros
+IndentPPDirectives: AfterHash
+
+# Comments
+ReflowComments: true
+
+# Empty lines
+MaxEmptyLinesToKeep: 1
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# Pointers
+DerivePointerAlignment: false
+PointerAlignment: Right

@@ -25,7 +25,7 @@ Check the [GitHub releases](https://github.com/Sarian-Lang/csarian) for download
 ```bash
 git clone https://github.com/Sarian-Lang/csarian.git
 cd csarian
-make
+make build_linux
 ````
 
 This will compile the interpreter to `build/sarian`.

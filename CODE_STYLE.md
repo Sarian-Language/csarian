@@ -75,7 +75,7 @@ This document defines the preferred coding style for the **Sarian programming la
     // This function advances position and handles escape sequences.
     void get_next_token()
     {
-    	...
+      ...
     }
     ```
 

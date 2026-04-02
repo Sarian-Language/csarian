@@ -316,13 +316,11 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, size_t line_num)
           operation[2] = NEXT_TOKEN_1;
 
           result = BinaryOperation(operation, line_num);
-
-          // Make the first operand the result and remove the operator and second operand so we can
-          // continue with the operation
           PREVIOUS_TOKEN.type = result.type;
           PREVIOUS_TOKEN.value = result.value;
           PREVIOUS_TOKEN.precedence = result.precedence;
 
+          // Shift tokens
           size_t shift_start = i;
           size_t total_tokens_to_shift = 2;
 

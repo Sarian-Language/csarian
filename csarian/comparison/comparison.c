@@ -2,10 +2,12 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "../binary_operations/binary_operations.h"
 #include "../debug/debug.h"
 #include "../definitions.h"
+#include "../error_handling/error.h"
 #include "../token_utils/token_utils.h"
 
 bool Comparison(Token *tokens, size_t tokens_count, size_t line_num)
@@ -44,22 +46,54 @@ bool Comparison(Token *tokens, size_t tokens_count, size_t line_num)
       double right;
       double left;
 
-      if (left_result.type == TOKEN_FLOAT_LITERAL)
+      if (left_result.type == TOKEN_STRING || right_result.type == TOKEN_STRING)
       {
-        left = atof(left_result.value);
-      }
-      else
-      {
-        left = atoi(left_result.value);
+        if (left_result.type == TOKEN_STRING && right_result.type == TOKEN_STRING)
+        {
+          if (CURRENT_TOKEN.type == TOKEN_EQUAL || CURRENT_TOKEN.type == TOKEN_NOT_EQUAL)
+          {
+            if (strcmp(left_result.value, right_result.value) == 0)
+            {
+              right = 0;
+              left = 0;
+            }
+            else
+            {
+              right = 1;
+              left = 0;
+            }
+          }
+          else
+          {
+            error(line_num, TYPE_INVALID_OPERATOR,
+                  "Only '==' and '!=' comparison operators are allowed in string comparisons.");
+          }
+        }
+        else
+        {
+          error(line_num, TYPE_INVALID, "Can only compare string to string.");
+        }
       }
 
-      if (right_result.type == TOKEN_FLOAT_LITERAL)
-      {
-        right = atof(right_result.value);
-      }
       else
       {
-        right = atoi(right_result.value);
+        if (left_result.type == TOKEN_FLOAT_LITERAL)
+        {
+          left = atof(left_result.value);
+        }
+        else
+        {
+          left = atoi(left_result.value);
+        }
+
+        if (right_result.type == TOKEN_FLOAT_LITERAL)
+        {
+          right = atof(right_result.value);
+        }
+        else
+        {
+          right = atoi(right_result.value);
+        }
       }
 
       switch (CURRENT_TOKEN.type)

@@ -79,7 +79,9 @@ int Interpreter(Token *tokens, size_t tokens_count)
             }
 
             else
+            {
               error(line_num, SYNTAX_INVALID, "Expected '{'.");
+            }
           }
 
           i = if_block_start;
@@ -123,12 +125,16 @@ int Interpreter(Token *tokens, size_t tokens_count)
             continue;
           }
           else
+          {
             error(line_num, SYNTAX_INCOMPLETE_BRACKET, "Incomplete brackets inside if block.");
+          }
         }
       }
 
       else
+      {
         error(line_num, SYNTAX_INVALID, "Expected '(' after if statement.");
+      }
     }
 
     if (CURRENT_TOKEN.type == TOKEN_FN)
@@ -148,7 +154,9 @@ int Interpreter(Token *tokens, size_t tokens_count)
           for (size_t j = i + 2 + parent_tokens->result_tokens_count + 1; j < tokens_count; j++)
           {
             if (J_CURRENT_TOKEN.type == TOKEN_EOL)
+            {
               line_num++;
+            }
 
             if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
             {
@@ -181,10 +189,14 @@ int Interpreter(Token *tokens, size_t tokens_count)
           continue;
         }
         else
+        {
           error(line_num, SYNTAX_INVALID, "Expected '('.");
+        }
       }
       else
+      {
         error(line_num, SYNTAX_INVALID, "Expected function name after 'fn'.");
+      }
     }
 
     if (CURRENT_TOKEN.type == TOKEN_IDENTIFIER)
@@ -254,9 +266,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
         int variable_index;
 
         if (PREVIOUS_TOKEN.type == TOKEN_IDENTIFIER)
-        {
           variable_index = GetGlobalVariable(PREVIOUS_TOKEN.value).variable_index;
-        }
         else
           error(line_num, SYNTAX_INVALID, "Expected identifier before '='.");
 

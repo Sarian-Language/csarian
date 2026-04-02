@@ -16,8 +16,6 @@
 
 ## Installation
 
-You can install Sarian in two ways:
-
 ### 1. Using precompiled releases
 Check the [GitHub releases](https://github.com/Sarian-Lang/csarian) for downloadable binaries for your platform.
 

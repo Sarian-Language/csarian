@@ -87,7 +87,7 @@ This document defines the preferred coding style for the **Sarian programming la
 
 ---
 
-### 4. Grammar
+## 4. Grammar
 
 * **No periods at the end** for labels describing code sections.
 

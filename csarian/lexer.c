@@ -103,7 +103,6 @@ int Lexer(char *code)
       {
         if (code[j] == '"' || code[j] == '\'')
         {
-          // Reached the end of the string.
           AddToken(TOKEN_STRING, strdup(string_value), NO_PRECEDENCE);
 
           free(string_value);

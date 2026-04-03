@@ -101,6 +101,11 @@ int Lexer(char *code)
 
       for (size_t j = i + 1; j < code_len; j++)
       {
+        if (code[j] == '\n')
+        {
+          current_line++;
+        }
+
         if (code[j] == '"' || code[j] == '\'')
         {
           // Reached the end of the string.

@@ -32,6 +32,18 @@ Before contributing, please read these guidelines carefully.
    * Verify that all changes **compile and run correctly**.
    * Include brief tests demonstrating that your code works as intended.
 
+4. **Developer Certificate of Origin (DCO)**
+
+   * All commits must be signed off to certify compliance with the [DCO](DCO.txt).
+
+   * This is done by adding a `Signed-off-by: Name <your@email.x>` line at the end of each commit message.
+
+   * Use the following command to sign your commits automatically:
+
+     ```
+     git commit -s
+     ```
+
 ---
 
 ## 2. Code Style

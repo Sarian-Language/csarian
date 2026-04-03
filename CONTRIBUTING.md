@@ -4,24 +4,28 @@ Before contributing, please read these guidelines carefully.
 
 ---
 
-## 1. General Rules
+## 1. Rules
 
 1. **AI / Automated Code Usage**
 
    * Contributions generated with AI or automated tools **are not allowed**.
-   * (**You can get help from AI but you can't copy-paste AI code**.)
+   * You may use AI for assistance, but **you must not copy-paste AI-generated code**.
 
 2. **Commit Messages**
 
    * Each commit must include a **detailed list of changes**. Example format:
 
      ```
-     - Added parser for function declarations
-     - Fixed memory leak in lexer
-     - Updated language documentation
+     - Add parser for function declarations
+     - Fix memory leak in lexer
+     - Update language documentation
      ```
-   * Avoid vague commit messages like “fixed stuff” or “update code”.
-   * Exceptions are only allowed for commits by the core developers that include many changes.
+     
+   * **Use the imperative mood** in the subject line.  
+     - Example: `Fix (x)`
+     - Avoid: `Fixed (x)`
+   
+   * Avoid vague commit messages like “fix stuff” or “update code”.
 
 3. **Testing Before Submission**
 

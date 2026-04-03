@@ -2,24 +2,21 @@
 
 # Sarian
 
-**Sarian** is an interpreted programming language written in C, designed for simplicity and rapid development.
+**Sarian** is an interpreted, general-purpose programming language written in C.
 
 ---
 
-## General Information
+## 📌 General Information
 
 - **Status:** Working in 0.1 version
-- **Documentation:** (yet to be made)
+- **Documentation:** Not yet available.
 - **License:** MIT License
 
 ---
 
-## Installation
+## ⚙️ Installation
 
-### 1. Using precompiled releases
-Check the [GitHub releases](https://github.com/Sarian-Lang/csarian) for downloadable binaries for your platform.
-
-### 2. Compiling from source
+### 1. Compiling from source
 ```bash
 git clone https://github.com/Sarian-Lang/csarian.git
 cd csarian
@@ -30,9 +27,15 @@ This will compile the interpreter to `build/sarian`.
 
 ---
 
-## Community
+## 👥 Community
 
 **Sarian Discord** community: [discord.gg/DWCpW3V6KT](https://discord.gg/DWCpW3V6KT)
+
+---
+
+## ❤️ Donations
+
+**BTC:** ```bc1qq8h3m20z6gg0f4k7xd94ufvf45h4p5hjqhy4d8```
 
 ---
 

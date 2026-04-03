@@ -22,8 +22,8 @@ Before contributing, please read these guidelines carefully.
      ```
      
    * **Use the imperative mood** in the subject line.  
-   - Example: `Fix (x)`  
-   - Avoid: `Fixed (x)`
+     - Example: `Fix (x)`
+     - Avoid: `Fixed (x)`
    
    * Avoid vague commit messages like “fix stuff” or “update code”.
 

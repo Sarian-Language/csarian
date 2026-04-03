@@ -57,8 +57,8 @@ int Interpreter(Token *tokens, size_t tokens_count)
         ResultTokens *parent_tokens =
           GetParentTokens(&tokens[i + 1], tokens_count - (i + 1), line_num);
 
-        bool result =
-          Comparison(parent_tokens->result_tokens, parent_tokens->result_tokens_count, line_num);
+        bool result = ParseComparison(parent_tokens->result_tokens,
+                                      parent_tokens->result_tokens_count, line_num);
 
         if (result)
         {

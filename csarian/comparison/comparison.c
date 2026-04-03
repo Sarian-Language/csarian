@@ -143,3 +143,76 @@ bool Comparison(Token *tokens, size_t tokens_count, size_t line_num)
 
   return false;
 }
+
+bool ParseComparison(Token *tokens, size_t tokens_count, size_t line_num)
+{
+  bool left_result = false;
+  bool right_result = false;
+
+  bool result = false;
+
+  size_t comparison_tokens_size = 16;
+  size_t comparison_tokens_count = 0;
+  Token *comparison_tokens = calloc(comparison_tokens_size, sizeof(Token));
+
+  for (size_t i = 0; i < tokens_count; i++)
+  {
+    if (CURRENT_TOKEN.type == TOKEN_OR)
+    {
+      ResultTokens *right_tokens = GetTokensUntilOR(&tokens[i + 1], tokens_count - (i + 1), line_num);
+
+      // Add EOF token to the left tokens.
+      comparison_tokens[comparison_tokens_count].type = TOKEN_EOF;
+      comparison_tokens[comparison_tokens_count].value = NULL;
+      comparison_tokens[comparison_tokens_count].precedence = NO_PRECEDENCE;
+      comparison_tokens_count++;
+
+      left_result = Comparison(comparison_tokens, comparison_tokens_count, line_num);
+      right_result = Comparison(right_tokens->result_tokens, right_tokens->result_tokens_count, line_num);
+
+      if (left_result == true || right_result == true)
+      {
+        result = true;
+        break;
+      }
+      else
+      {
+        break;
+      }
+    }
+
+    else if (CURRENT_TOKEN.type == TOKEN_EOF)
+    {
+      comparison_tokens[comparison_tokens_count].type = TOKEN_EOF;
+      comparison_tokens[comparison_tokens_count].value = NULL;
+      comparison_tokens[comparison_tokens_count].precedence = NO_PRECEDENCE;
+      comparison_tokens_count++;
+
+      result = Comparison(comparison_tokens, comparison_tokens_count, line_num);
+      break;
+    }
+
+    else
+    {
+      if (comparison_tokens_size >= comparison_tokens_count)
+      {
+        size_t new_size = comparison_tokens_size * 2;
+
+        Token *tmp = realloc(comparison_tokens, new_size);
+
+        comparison_tokens = tmp;
+        comparison_tokens_size *= 2;
+      }
+
+      comparison_tokens[comparison_tokens_count].type = CURRENT_TOKEN.type;
+      comparison_tokens[comparison_tokens_count].value = CURRENT_TOKEN.value;
+      comparison_tokens[comparison_tokens_count].precedence = CURRENT_TOKEN.precedence;
+      comparison_tokens_count++;
+    }
+  }
+
+  free(comparison_tokens);
+  comparison_tokens = NULL;
+
+  return result;
+}

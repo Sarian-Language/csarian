@@ -35,9 +35,9 @@ fn add_numbers() {
     printd(sum)
 
     // If statements
-    if (sum == 35)
+    if (sum == 35 or sum == 30)
     {
-      printd("The sum result is 35")
+      printd("The sum result is 35/30")
     }
 }
 

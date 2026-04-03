@@ -13,10 +13,10 @@ Before contributing, please read these guidelines carefully.
 
 2. **Commit Messages**
 
-   * Each commit must include a **detailed list of changes**. Example format:
+   * Each commit must include a **title and a detailed list of changes**. Example format:
 
      ```
-     - Add parser for function declarations
+     Add parser for function declarations
      - Fix memory leak in lexer
      - Update language documentation
      ```

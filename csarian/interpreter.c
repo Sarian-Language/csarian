@@ -20,7 +20,11 @@ int Interpreter(Token *tokens, size_t tokens_count)
 
   size_t line_num = 1;
 
-  bool in_block = false;
+  bool in_function = false;
+
+  bool in_while = false;
+  ResultTokens *while_comparison_tokens;
+  ssize_t while_block_start = -1;
 
   // End position of the current block being executed
   ssize_t block_end = -1;
@@ -36,15 +40,34 @@ int Interpreter(Token *tokens, size_t tokens_count)
       line_num++;
     }
 
-    if (in_block == true)
+    if (in_function == true)
     {
       if (i > block_end)  // Check if we reached the end of the block
       {
         i = original_pos;
 
         original_pos = -1;
-        in_block = false;
+        in_function = false;
         block_end = -1;
+
+        continue;
+      }
+    }
+
+    if (in_while == true)
+    {
+      if (i > block_end)
+      {
+        if (ParseComparison(while_comparison_tokens->result_tokens, while_comparison_tokens->result_tokens_count, line_num))
+        {
+          i = while_block_start;
+        }
+        else
+        {
+          i = block_end;
+          block_end = -1;
+          in_while = false;
+        }
 
         continue;
       }
@@ -137,6 +160,123 @@ int Interpreter(Token *tokens, size_t tokens_count)
       }
     }
 
+    if (CURRENT_TOKEN.type == TOKEN_WHILE)
+    {
+      if (NEXT_TOKEN_1.type == TOKEN_LPARENT)
+      {
+        while_comparison_tokens = GetParentTokens(&tokens[i + 1], tokens_count - (i + 1), line_num);
+
+        bool result = ParseComparison(while_comparison_tokens->result_tokens,
+                                      while_comparison_tokens->result_tokens_count, line_num);
+
+        if (result)
+        {
+          while_block_start = -1;
+          
+          size_t depth = 0;
+          ssize_t while_block_end = -1;
+          bool found_block = false;
+
+          for (size_t j = i + 1 + while_comparison_tokens->result_tokens_count + 1; j < tokens_count; j++)
+          {
+            if (J_CURRENT_TOKEN.type == TOKEN_EOL)
+              line_num++;
+
+            else if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+            {
+              if (found_block == false)
+              {
+                found_block = true;
+                while_block_start = j;
+              }
+              else
+                depth++;
+            }
+
+            else if (J_CURRENT_TOKEN.type == TOKEN_RBRACKET)
+            {
+              if (depth == 0)
+              {
+                while_block_end = j;
+                break;
+              }
+              else
+                depth--;
+            }
+          }
+
+          if (while_block_start != -1)
+          {
+            i = while_block_start;
+
+            if (while_block_end != -1)
+            {
+              block_end = while_block_end;
+            }
+            else
+            {
+              error(line_num, SYNTAX_INCOMPLETE_BRACKET, "Incomplete brackets at while block.");
+            }
+            
+          }
+          else
+          {
+            error(line_num, SYNTAX_INVALID, "Expected '{' at while loop.");
+          }
+
+          in_while = true;
+          continue;
+        }
+
+        else
+        {
+          size_t depth = 0;
+          ssize_t while_block_end = -1;
+          bool found_block = false;
+
+          for (size_t j = i + 1 + while_comparison_tokens->result_tokens_count + 1; j < tokens_count; j++)
+          {
+            if (J_CURRENT_TOKEN.type == TOKEN_EOL)
+              line_num++;
+
+            if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+            {
+              if (found_block == true)
+                depth++;
+              else
+                found_block = true;
+            }
+
+            if (J_CURRENT_TOKEN.type == TOKEN_RBRACKET)
+            {
+              if (depth == 0)
+              {
+                while_block_end = j;
+                break;
+              }
+              else
+                depth--;
+            }
+          }
+
+          if (while_block_end != -1)
+          {
+            i = while_block_end;
+            continue;
+          }
+          else
+          {
+            error(line_num, SYNTAX_INCOMPLETE_BRACKET, "Incomplete brackets inside while block.");
+          }
+        }
+      }
+
+      else
+      {
+        error(line_num, SYNTAX_INVALID, "Expected '(' after while statement.");
+      }
+    }
+
     if (CURRENT_TOKEN.type == TOKEN_FN)
     {
       if (i + 1 <= tokens_count && NEXT_TOKEN_1.type == TOKEN_IDENTIFIER)
@@ -219,7 +359,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
 
         i = functions[result].start - 1;
         block_end = functions[result].end;
-        in_block = true;
+        in_function = true;
 
         continue;
       }

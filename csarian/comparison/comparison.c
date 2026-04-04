@@ -159,7 +159,8 @@ bool ParseComparison(Token *tokens, size_t tokens_count, size_t line_num)
   {
     if (CURRENT_TOKEN.type == TOKEN_OR)
     {
-      ResultTokens *right_tokens = GetTokensUntilOR(&tokens[i + 1], tokens_count - (i + 1), line_num);
+      ResultTokens *right_tokens =
+        GetTokensUntilOR(&tokens[i + 1], tokens_count - (i + 1), line_num);
 
       // Add EOF token to the left tokens.
       comparison_tokens[comparison_tokens_count].type = TOKEN_EOF;
@@ -168,7 +169,8 @@ bool ParseComparison(Token *tokens, size_t tokens_count, size_t line_num)
       comparison_tokens_count++;
 
       left_result = Comparison(comparison_tokens, comparison_tokens_count, line_num);
-      right_result = Comparison(right_tokens->result_tokens, right_tokens->result_tokens_count, line_num);
+      right_result =
+        Comparison(right_tokens->result_tokens, right_tokens->result_tokens_count, line_num);
 
       if (left_result == true || right_result == true)
       {

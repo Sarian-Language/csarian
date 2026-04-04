@@ -53,6 +53,5 @@ int SearchFunction(char *name)
     }
   }
 
-  // Function is not found
   return -1;
 }

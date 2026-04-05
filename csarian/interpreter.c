@@ -58,7 +58,8 @@ int Interpreter(Token *tokens, size_t tokens_count)
     {
       if (i > block_end)
       {
-        if (ParseComparison(while_comparison_tokens->result_tokens, while_comparison_tokens->result_tokens_count, line_num))
+        if (ParseComparison(while_comparison_tokens->result_tokens,
+                            while_comparison_tokens->result_tokens_count, line_num))
         {
           i = while_block_start;
         }
@@ -70,6 +71,58 @@ int Interpreter(Token *tokens, size_t tokens_count)
         }
 
         continue;
+      }
+    }
+
+    // Ignore else blocks, as they are handled in the conditionals and would cause unwanted
+    // execution.
+    if (CURRENT_TOKEN.type == TOKEN_ELSE)
+    {
+      bool found_block = false;
+      size_t depth = 0;
+      ssize_t else_block_end = -1;
+
+      for (size_t j = i + 1; j < tokens_count; j++)
+      {
+        if (J_CURRENT_TOKEN.type == TOKEN_EOL)
+        {
+          line_num++;
+        }
+
+        if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+        {
+          if (found_block)
+          {
+            depth++;
+          }
+          else
+          {
+            found_block = true;
+          }
+        }
+
+        if (J_CURRENT_TOKEN.type == TOKEN_RBRACKET)
+        {
+          if (depth == 0)
+          {
+            else_block_end = j;
+            break;
+          }
+          else
+          {
+            depth--;
+          }
+        }
+      }
+
+      if (else_block_end != -1)
+      {
+        i = else_block_end;
+        continue;
+      }
+      else
+      {
+        error(line_num, SYNTAX_INCOMPLETE_BRACKET, "Incomplete brackets in else block.");
       }
     }
 
@@ -144,7 +197,36 @@ int Interpreter(Token *tokens, size_t tokens_count)
 
           if (if_block_end != -1)
           {
-            i = if_block_end;
+            ssize_t found_else = -1;
+
+            for (size_t j = if_block_end + 1; j < tokens_count; j++)
+            {
+              if (J_CURRENT_TOKEN.type == TOKEN_EOL)
+              {
+                line_num++;
+              }
+
+              else if (J_CURRENT_TOKEN.type == TOKEN_ELSE)
+              {
+                found_else = true;
+              }
+
+              else if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+              {
+                if (found_else)
+                {
+                  i = j;
+                  break;
+                }
+              }
+
+              else
+              {
+                i = if_block_end;
+                break;
+              }
+            }
+
             continue;
           }
           else
@@ -172,12 +254,13 @@ int Interpreter(Token *tokens, size_t tokens_count)
         if (result)
         {
           while_block_start = -1;
-          
+
           size_t depth = 0;
           ssize_t while_block_end = -1;
           bool found_block = false;
 
-          for (size_t j = i + 1 + while_comparison_tokens->result_tokens_count + 1; j < tokens_count; j++)
+          for (size_t j = i + 1 + while_comparison_tokens->result_tokens_count + 1;
+               j < tokens_count; j++)
           {
             if (J_CURRENT_TOKEN.type == TOKEN_EOL)
               line_num++;
@@ -217,7 +300,6 @@ int Interpreter(Token *tokens, size_t tokens_count)
             {
               error(line_num, SYNTAX_INCOMPLETE_BRACKET, "Incomplete brackets at while block.");
             }
-            
           }
           else
           {
@@ -234,7 +316,8 @@ int Interpreter(Token *tokens, size_t tokens_count)
           ssize_t while_block_end = -1;
           bool found_block = false;
 
-          for (size_t j = i + 1 + while_comparison_tokens->result_tokens_count + 1; j < tokens_count; j++)
+          for (size_t j = i + 1 + while_comparison_tokens->result_tokens_count + 1;
+               j < tokens_count; j++)
           {
             if (J_CURRENT_TOKEN.type == TOKEN_EOL)
               line_num++;
@@ -261,7 +344,36 @@ int Interpreter(Token *tokens, size_t tokens_count)
 
           if (while_block_end != -1)
           {
-            i = while_block_end;
+            ssize_t found_else = -1;
+
+            for (size_t j = while_block_end + 1; j < tokens_count; j++)
+            {
+              if (J_CURRENT_TOKEN.type == TOKEN_EOL)
+              {
+                line_num++;
+              }
+
+              else if (J_CURRENT_TOKEN.type == TOKEN_ELSE)
+              {
+                found_else = true;
+              }
+
+              else if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+              {
+                if (found_else)
+                {
+                  i = j;
+                  break;
+                }
+              }
+
+              else
+              {
+                i = while_block_end;
+                break;
+              }
+            }
+
             continue;
           }
           else
@@ -296,6 +408,12 @@ int Interpreter(Token *tokens, size_t tokens_count)
             if (J_CURRENT_TOKEN.type == TOKEN_EOL)
             {
               line_num++;
+            }
+
+            if (J_CURRENT_TOKEN.type == TOKEN_FN)
+            {
+              error(line_num, SYNTAX_ILLEGAL_FUNCTION,
+                    "Cannot declare function inside another function.");
             }
 
             if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)

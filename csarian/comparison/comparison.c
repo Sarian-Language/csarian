@@ -179,6 +179,34 @@ bool ParseComparison(Token *tokens, size_t tokens_count, size_t line_num)
       }
       else
       {
+        result = false;
+        break;
+      }
+    }
+
+    if (CURRENT_TOKEN.type == TOKEN_AND)
+    {
+      ResultTokens *right_tokens =
+        GetTokensUntilOR(&tokens[i + 1], tokens_count - (i + 1), line_num);
+
+      // Add EOF token to the left tokens.
+      comparison_tokens[comparison_tokens_count].type = TOKEN_EOF;
+      comparison_tokens[comparison_tokens_count].value = NULL;
+      comparison_tokens[comparison_tokens_count].precedence = NO_PRECEDENCE;
+      comparison_tokens_count++;
+
+      left_result = Comparison(comparison_tokens, comparison_tokens_count, line_num);
+      right_result =
+        Comparison(right_tokens->result_tokens, right_tokens->result_tokens_count, line_num);
+
+      if (left_result == true && right_result == true)
+      {
+        result = true;
+        break;
+      }
+      else
+      {
+        result = false;
         break;
       }
     }

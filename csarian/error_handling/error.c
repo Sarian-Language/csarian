@@ -48,8 +48,8 @@ int error(int line, int error_type, char *error_message)
       fprintf(stderr, "\nSYNTAX_INVALID Error (%d), at line: %d\n%s\n", error_type, line,
               error_message);
       exit(1);
-    case SYNTAX_INCOMPLETE_BRACKET:
-      fprintf(stderr, "\nSYNTAX_INCOMPLETE_BRACKET Error (%d), at line: %d\n%s\n", error_type, line,
+    case SYNTAX_INCOMPLETE_BRACE:
+      fprintf(stderr, "\nSYNTAX_INCOMPLETE_BRACE Error (%d), at line: %d\n%s\n", error_type, line,
               error_message);
       exit(1);
     case TYPE_INVALID_OPERATOR:

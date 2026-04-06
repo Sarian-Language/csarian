@@ -391,7 +391,7 @@ int Lexer(char *code)
       AddToken(TOKEN_RPARENT, NULL, NO_PRECEDENCE);
     }
 
-    // Brackets
+    // Braces
     else if (current_char == '{')
     {
       AddToken(TOKEN_LBRACE, NULL, NO_PRECEDENCE);

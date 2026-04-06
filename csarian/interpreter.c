@@ -122,7 +122,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
       }
       else
       {
-        error(line_num, SYNTAX_INCOMPLETE_BRACKET, "Incomplete brackets in else block.");
+        error(line_num, SYNTAX_INCOMPLETE_BRACE, "Incomplete braces in else block.");
       }
     }
 
@@ -231,7 +231,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
           }
           else
           {
-            error(line_num, SYNTAX_INCOMPLETE_BRACKET, "Incomplete brackets inside if block.");
+            error(line_num, SYNTAX_INCOMPLETE_BRACE, "Incomplete braces inside if block.");
           }
         }
       }
@@ -298,7 +298,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
             }
             else
             {
-              error(line_num, SYNTAX_INCOMPLETE_BRACKET, "Incomplete brackets at while block.");
+              error(line_num, SYNTAX_INCOMPLETE_BRACE, "Incomplete braces at while block.");
             }
           }
           else
@@ -378,7 +378,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
           }
           else
           {
-            error(line_num, SYNTAX_INCOMPLETE_BRACKET, "Incomplete brackets inside while block.");
+            error(line_num, SYNTAX_INCOMPLETE_BRACE, "Incomplete braces inside while block.");
           }
         }
       }
@@ -439,7 +439,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
           }
 
           if (fn_block_end == -1)
-            error(line_num, SYNTAX_INCOMPLETE_BRACKET, "Incomplete brackets inside function.");
+            error(line_num, SYNTAX_INCOMPLETE_BRACE, "Incomplete braces inside function.");
 
           AddFunction(NEXT_TOKEN_1.value, fn_block_start, fn_block_end);
 

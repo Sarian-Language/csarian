@@ -12,7 +12,7 @@ This document defines the preferred coding style for the **Sarian programming la
   make format
   ```
 
-  This automatically formats your code, including **indentation, bracket placement, and other formatting rules.**
+  This automatically formats your code, including **indentation, brace placement, and other formatting rules.**
 
 * Anything not covered by the automatic formatter is explained in the following sections.
 

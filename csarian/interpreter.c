@@ -89,7 +89,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
           line_num++;
         }
 
-        if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+        if (J_CURRENT_TOKEN.type == TOKEN_LBRACE)
         {
           if (found_block)
           {
@@ -101,7 +101,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
           }
         }
 
-        if (J_CURRENT_TOKEN.type == TOKEN_RBRACKET)
+        if (J_CURRENT_TOKEN.type == TOKEN_RBRACE)
         {
           if (depth == 0)
           {
@@ -145,7 +145,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
             if (J_CURRENT_TOKEN.type == TOKEN_EOL)
               line_num++;
 
-            else if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+            else if (J_CURRENT_TOKEN.type == TOKEN_LBRACE)
             {
               if (if_block_start == -1)
               {
@@ -175,7 +175,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
             if (J_CURRENT_TOKEN.type == TOKEN_EOL)
               line_num++;
 
-            if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+            if (J_CURRENT_TOKEN.type == TOKEN_LBRACE)
             {
               if (found_block == true)
                 depth++;
@@ -183,7 +183,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
                 found_block = true;
             }
 
-            if (J_CURRENT_TOKEN.type == TOKEN_RBRACKET)
+            if (J_CURRENT_TOKEN.type == TOKEN_RBRACE)
             {
               if (depth == 0)
               {
@@ -211,7 +211,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
                 found_else = true;
               }
 
-              else if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+              else if (J_CURRENT_TOKEN.type == TOKEN_LBRACE)
               {
                 if (found_else)
                 {
@@ -265,7 +265,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
             if (J_CURRENT_TOKEN.type == TOKEN_EOL)
               line_num++;
 
-            else if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+            else if (J_CURRENT_TOKEN.type == TOKEN_LBRACE)
             {
               if (found_block == false)
               {
@@ -276,7 +276,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
                 depth++;
             }
 
-            else if (J_CURRENT_TOKEN.type == TOKEN_RBRACKET)
+            else if (J_CURRENT_TOKEN.type == TOKEN_RBRACE)
             {
               if (depth == 0)
               {
@@ -322,7 +322,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
             if (J_CURRENT_TOKEN.type == TOKEN_EOL)
               line_num++;
 
-            if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+            if (J_CURRENT_TOKEN.type == TOKEN_LBRACE)
             {
               if (found_block == true)
                 depth++;
@@ -330,7 +330,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
                 found_block = true;
             }
 
-            if (J_CURRENT_TOKEN.type == TOKEN_RBRACKET)
+            if (J_CURRENT_TOKEN.type == TOKEN_RBRACE)
             {
               if (depth == 0)
               {
@@ -358,7 +358,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
                 found_else = true;
               }
 
-              else if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+              else if (J_CURRENT_TOKEN.type == TOKEN_LBRACE)
               {
                 if (found_else)
                 {
@@ -416,7 +416,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
                     "Cannot declare function inside another function.");
             }
 
-            if (J_CURRENT_TOKEN.type == TOKEN_LBRACKET)
+            if (J_CURRENT_TOKEN.type == TOKEN_LBRACE)
             {
               if (fn_block_start == -1)
               {
@@ -426,7 +426,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
                 depth++;
             }
 
-            if (J_CURRENT_TOKEN.type == TOKEN_RBRACKET)
+            if (J_CURRENT_TOKEN.type == TOKEN_RBRACE)
             {
               if (depth == 0)
               {

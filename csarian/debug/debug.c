@@ -57,11 +57,11 @@ void PrintTokens(Token *tokens, int numTokens)
       case TOKEN_ELSE:
         printf("[TOKEN_ELSE] ");
         break;
-      case TOKEN_LBRACKET:
-        printf("[TOKEN_LBRACKET] ");
+      case TOKEN_LBRACE:
+        printf("[TOKEN_LBRACE] ");
         break;
-      case TOKEN_RBRACKET:
-        printf("[TOKEN_RBRACKET] ");
+      case TOKEN_RBRACE:
+        printf("[TOKEN_RBRACE] ");
         break;
       case TOKEN_EQUAL:
         printf("[TOKEN_EQUAL] ");
@@ -104,6 +104,12 @@ void PrintTokens(Token *tokens, int numTokens)
         break;
       case TOKEN_FN:
         printf("[TOKEN_FN] ");
+        break;
+      case TOKEN_IMPORT:
+        printf("[TOKEN_IMPORT] ");
+        break;
+      case TOKEN_NULL:
+        printf("[TOKEN_NULL] ");
         break;
 
       default:

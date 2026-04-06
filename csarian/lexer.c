@@ -202,6 +202,9 @@ int Lexer(char *code)
           else if (strcmp(identifier, "fn") == 0)
             AddToken(TOKEN_FN, NULL, NO_PRECEDENCE);
 
+          else if (strcmp(identifier, "import") == 0)
+            AddToken(TOKEN_IMPORT, NULL, NO_PRECEDENCE);
+
           // Not a keyword, adding normal identifier token.
           else
           {
@@ -391,11 +394,11 @@ int Lexer(char *code)
     // Brackets
     else if (current_char == '{')
     {
-      AddToken(TOKEN_LBRACKET, NULL, NO_PRECEDENCE);
+      AddToken(TOKEN_LBRACE, NULL, NO_PRECEDENCE);
     }
     else if (current_char == '}')
     {
-      AddToken(TOKEN_RBRACKET, NULL, NO_PRECEDENCE);
+      AddToken(TOKEN_RBRACE, NULL, NO_PRECEDENCE);
     }
 
     else if (current_char == ' ')

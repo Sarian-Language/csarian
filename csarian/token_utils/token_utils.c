@@ -5,7 +5,7 @@
 #include "../definitions.h"
 #include "../error_handling/error.h"
 #include "../global_variables/global_vars.h"
-#include "../interpreter.h"
+#include "../token_utils/token_utils.h"
 
 VariableType TokenTypeToVariableType(Token token, size_t line_num)
 {

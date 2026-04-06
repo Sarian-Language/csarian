@@ -3,7 +3,8 @@
 #define LEXER_H
 
 #include "definitions.h"
+#include "token_utils/token_utils.h"
 
-int Lexer(char *code);
+ResultTokens Lexer(char *code);
 
 #endif

@@ -10,9 +10,9 @@
 #include "debug/debug.h"
 #include "definitions.h"
 #include "error_handling/error.h"
-#include "interpreter.h"
+#include "token_utils/token_utils.h"
 
-int current_token;
+size_t current_token;
 size_t tokens_len;
 Token *tokens;
 
@@ -38,8 +38,10 @@ void AddToken(TokenType token_type, char *token_value, TokenPrecedence token_pre
   current_token++;
 }
 
-int Lexer(char *code)
+ResultTokens Lexer(char *code)
 {
+  ResultTokens result_tokens;
+
   int current_line = 1;
 
   InitTokens();
@@ -77,7 +79,7 @@ int Lexer(char *code)
           }
         }
 
-        i -= 2;  // -2 so we can add the EOL/EOF token.
+        i -= 2;
         continue;
       }
       else
@@ -416,7 +418,8 @@ int Lexer(char *code)
 
   // PrintTokens(tokens, current_token); // DEBUG
 
-  Interpreter(tokens, current_token);
+  result_tokens.result_tokens = tokens;
+  result_tokens.result_tokens_count = current_token;
 
-  return 0;
+  return result_tokens;
 }

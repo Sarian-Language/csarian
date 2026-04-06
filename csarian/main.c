@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "interpreter.h"
 #include "lexer.h"
+#include "token_utils/token_utils.h"
 
 int main(int argc, char *argv[])
 {
@@ -55,7 +57,8 @@ int main(int argc, char *argv[])
   code[filesize] = '\0';
   fclose(file);
 
-  Lexer(code);
+  ResultTokens tokens = Lexer(code);
+  Interpreter(tokens.result_tokens, tokens.result_tokens_count);
 
   free(code);
   return 0;

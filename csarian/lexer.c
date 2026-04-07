@@ -210,6 +210,9 @@ ResultTokens Lexer(char *code)
           else if (strcmp(identifier, "return") == 0)
             AddToken(TOKEN_RETURN, NULL, NO_PRECEDENCE);
 
+          else if (strcmp(identifier, "goto") == 0)
+            AddToken(TOKEN_GOTO, NULL, NO_PRECEDENCE);
+
           // Not a keyword, adding normal identifier token.
           else
           {

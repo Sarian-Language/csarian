@@ -13,6 +13,7 @@ build_linux:
 	$(SRC_DIR)/global_variables/global_vars.c \
 	$(SRC_DIR)/comparison/comparison.c \
 	$(SRC_DIR)/token_utils/token_utils.c \
+	$(SRC_DIR)/labels/label.c \
 	-lm
 
 	@echo "Build Finished."

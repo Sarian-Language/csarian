@@ -114,6 +114,9 @@ void PrintTokens(Token *tokens, int numTokens)
       case TOKEN_RETURN:
         printf("[TOKEN_RETURN] ");
         break;
+      case TOKEN_GOTO:
+        printf("[TOKEN_GOTO] ");
+        break;
 
       default:
         printf("[UNKNOWN TOKEN] ");

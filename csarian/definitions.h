@@ -58,6 +58,7 @@ typedef enum
   TOKEN_FN,
   TOKEN_IMPORT,
   TOKEN_RETURN,
+  TOKEN_GOTO,
   TOKEN_NULL
 } TokenType;
 
@@ -90,6 +91,13 @@ typedef struct
   size_t start;
   size_t end;
 } Function;
+
+// Labels (goto)
+typedef struct
+{
+  char *key;
+  size_t start;
+} Label;
 
 // Macros
 #define IS_BINARY_OPERATOR(t)                                                                \

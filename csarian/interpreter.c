@@ -11,6 +11,7 @@
 #include "error_handling/error.h"
 #include "functions/fn.h"
 #include "global_variables/global_vars.h"
+#include "labels/label.h"
 #include "lexer.h"
 #include "token_utils/token_utils.h"
 
@@ -18,6 +19,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
 {
   InitGlobalVariables();
   InitFunctions();
+  InitLabels();
 
   size_t line_num = 1;
   
@@ -160,7 +162,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
       }
     }
 
-    // Ignore else blocks, as they are handled in the conditionals and would cause unwanted
+    // Ignores else blocks, as they are handled in the conditionals and would cause unwanted
     // execution.
     if (CURRENT_TOKEN.type == TOKEN_ELSE)
     {
@@ -571,7 +573,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
       {
         if (!(GetGlobalVariable(CURRENT_TOKEN.value).variable_index != -1))
         {
-          if (NEXT_TOKEN_1.type != TOKEN_ASSIGNMENT)
+          if (NEXT_TOKEN_1.type != TOKEN_ASSIGNMENT && NEXT_TOKEN_1.type != TOKEN_COLON)
           {
             error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
           }
@@ -670,6 +672,40 @@ int Interpreter(Token *tokens, size_t tokens_count)
       else
       {
         error(line_num, SYNTAX_INVALID, "Incomplete assignment (=).");
+      }
+    }
+
+    if (CURRENT_TOKEN.type == TOKEN_COLON)
+    {
+      if (i - 1 >= 0 && PREVIOUS_TOKEN.type == TOKEN_IDENTIFIER)
+      {
+        CreateLabel(PREVIOUS_TOKEN.value, i);
+      }
+      else
+      {
+        error(line_num, SYNTAX_INVALID, "Invalid or missing label name.");
+      }
+    }
+
+    if (CURRENT_TOKEN.type == TOKEN_GOTO)
+    {
+      if (NEXT_TOKEN_1.type == TOKEN_IDENTIFIER)
+      {
+        ssize_t label_index = GetLabel(NEXT_TOKEN_1.value);
+
+        if (label_index != -1)
+        {
+          i = labels[label_index].start;
+          continue;
+        }
+        else 
+        {
+          error(line_num, SYNTAX_INVALID, "Unknown 'goto' label.");
+        }
+      }
+      else
+      {
+        error(line_num, SYNTAX_INVALID, "Missing label name for 'goto'.");
       }
     }
   }

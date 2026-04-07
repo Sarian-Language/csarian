@@ -57,6 +57,7 @@ typedef enum
   TOKEN_DBG_PRINT,
   TOKEN_FN,
   TOKEN_IMPORT,
+  TOKEN_RETURN,
   TOKEN_NULL
 } TokenType;
 

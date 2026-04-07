@@ -20,7 +20,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
   InitFunctions();
 
   size_t line_num = 1;
-
+  
   bool in_function = false;
 
   bool in_while = false;
@@ -571,7 +571,10 @@ int Interpreter(Token *tokens, size_t tokens_count)
       {
         if (!(GetGlobalVariable(CURRENT_TOKEN.value).variable_index != -1))
         {
-          error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
+          if (NEXT_TOKEN_1.type != TOKEN_ASSIGNMENT)
+          {
+            error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
+          }
         }
       }
     }

@@ -207,6 +207,9 @@ ResultTokens Lexer(char *code)
           else if (strcmp(identifier, "import") == 0)
             AddToken(TOKEN_IMPORT, NULL, NO_PRECEDENCE);
 
+          else if (strcmp(identifier, "return") == 0)
+            AddToken(TOKEN_RETURN, NULL, NO_PRECEDENCE);
+
           // Not a keyword, adding normal identifier token.
           else
           {

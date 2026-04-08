@@ -315,6 +315,13 @@ ResultTokens Lexer(char *code)
     {
       AddToken(TOKEN_COLON, NULL, NO_PRECEDENCE);
     }
+    
+    // SEMICOLON (EOL)
+    else if (current_char == ';')
+    {
+      current_line++;
+      AddToken(TOKEN_EOL, NULL, NO_PRECEDENCE);
+    }
 
     // PLUS operator
     else if (current_char == '+')

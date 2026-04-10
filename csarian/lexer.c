@@ -310,12 +310,18 @@ ResultTokens Lexer(char *code)
       number = NULL;
     }
 
+    // COMMA
+    else if (current_char == ',')
+    {
+      AddToken(TOKEN_COMMA, NULL, NO_PRECEDENCE);
+    }
+
     // COLON
     else if (current_char == ':')
     {
       AddToken(TOKEN_COLON, NULL, NO_PRECEDENCE);
     }
-    
+
     // SEMICOLON (EOL)
     else if (current_char == ';')
     {

@@ -6,8 +6,9 @@
 
 #include "../definitions.h"
 
-Token BinaryOperation(Token *tokens, size_t line_num);
+Token BinaryOperation(Token *tokens, ssize_t current_function, size_t line_num);
 
-Token ParseBinaryOperation(Token *tokens, size_t tokens_count, size_t line_num);
+Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_function,
+                           size_t line_num);
 
 #endif

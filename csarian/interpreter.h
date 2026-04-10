@@ -7,6 +7,7 @@
 #include "definitions.h"
 #include "token_utils/token_utils.h"
 
-int Interpreter(Token *tokens, size_t tokens_count);
+int Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t current_function,
+                size_t line_num);
 
 #endif

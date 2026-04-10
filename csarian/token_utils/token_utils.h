@@ -10,7 +10,7 @@ typedef struct
   Token *result_tokens;
 } ResultTokens;
 
-VariableType TokenTypeToVariableType(Token token, size_t line_num);
+VariableType TokenTypeToVariableType(Token token, ssize_t current_function, size_t line_num);
 
 TokenType VariableTypeToTokenType(VariableType type);
 

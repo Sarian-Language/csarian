@@ -10,7 +10,7 @@
 #include "../error_handling/error.h"
 #include "../token_utils/token_utils.h"
 
-bool Comparison(Token *tokens, size_t tokens_count, size_t line_num)
+bool Comparison(Token *tokens, size_t tokens_count, ssize_t current_function, size_t line_num)
 {
   size_t i;
 
@@ -30,17 +30,17 @@ bool Comparison(Token *tokens, size_t tokens_count, size_t line_num)
       left_operation_tokens[i].value = NULL;
       left_operation_tokens[i].precedence = NO_PRECEDENCE;
 
-      Token left_result =
-        ParseBinaryOperation(left_operation_tokens, left_operation_tokens_count, line_num);
+      Token left_result = ParseBinaryOperation(left_operation_tokens, left_operation_tokens_count,
+                                               current_function, line_num);
 
       // Parse right binary operation.
       size_t right_operation_tokens_count = tokens_count - (i + 1);
       ResultTokens *right_operation_tokens =
         GetTokensUntilEOF(&tokens[i + 1], tokens_count - 1, line_num);
 
-      Token right_result =
-        ParseBinaryOperation(right_operation_tokens->result_tokens,
-                             right_operation_tokens->result_tokens_count, line_num);
+      Token right_result = ParseBinaryOperation(right_operation_tokens->result_tokens,
+                                                right_operation_tokens->result_tokens_count,
+                                                current_function, line_num);
 
       // Convert results
       double right;
@@ -144,7 +144,7 @@ bool Comparison(Token *tokens, size_t tokens_count, size_t line_num)
   return false;
 }
 
-bool ParseComparison(Token *tokens, size_t tokens_count, size_t line_num)
+bool ParseComparison(Token *tokens, size_t tokens_count, ssize_t current_function, size_t line_num)
 {
   bool left_result = false;
   bool right_result = false;
@@ -168,9 +168,10 @@ bool ParseComparison(Token *tokens, size_t tokens_count, size_t line_num)
       comparison_tokens[comparison_tokens_count].precedence = NO_PRECEDENCE;
       comparison_tokens_count++;
 
-      left_result = Comparison(comparison_tokens, comparison_tokens_count, line_num);
-      right_result =
-        Comparison(right_tokens->result_tokens, right_tokens->result_tokens_count, line_num);
+      left_result =
+        Comparison(comparison_tokens, comparison_tokens_count, current_function, line_num);
+      right_result = Comparison(right_tokens->result_tokens, right_tokens->result_tokens_count,
+                                current_function, line_num);
 
       if (left_result == true || right_result == true)
       {
@@ -195,9 +196,10 @@ bool ParseComparison(Token *tokens, size_t tokens_count, size_t line_num)
       comparison_tokens[comparison_tokens_count].precedence = NO_PRECEDENCE;
       comparison_tokens_count++;
 
-      left_result = Comparison(comparison_tokens, comparison_tokens_count, line_num);
-      right_result =
-        Comparison(right_tokens->result_tokens, right_tokens->result_tokens_count, line_num);
+      left_result =
+        Comparison(comparison_tokens, comparison_tokens_count, current_function, line_num);
+      right_result = Comparison(right_tokens->result_tokens, right_tokens->result_tokens_count,
+                                current_function, line_num);
 
       if (left_result == true && right_result == true)
       {
@@ -218,7 +220,7 @@ bool ParseComparison(Token *tokens, size_t tokens_count, size_t line_num)
       comparison_tokens[comparison_tokens_count].precedence = NO_PRECEDENCE;
       comparison_tokens_count++;
 
-      result = Comparison(comparison_tokens, comparison_tokens_count, line_num);
+      result = Comparison(comparison_tokens, comparison_tokens_count, current_function, line_num);
       break;
     }
 

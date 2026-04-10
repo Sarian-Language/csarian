@@ -6,7 +6,7 @@
 
 typedef struct
 {
-  int variable_index;
+  ssize_t variable_index;
   void *variable_value;
   VariableType variable_type;
 } GetGlobalVariableResult;
@@ -19,6 +19,6 @@ void CreateGlobalVariable(char *name, VariableType type, void *value);
 
 GetGlobalVariableResult GetGlobalVariable(char *name);
 
-extern GlobalVariable *global_variables;
+extern Variable *global_variables;
 
 #endif

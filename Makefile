@@ -14,6 +14,7 @@ build_linux:
 	$(SRC_DIR)/comparison/comparison.c \
 	$(SRC_DIR)/token_utils/token_utils.c \
 	$(SRC_DIR)/labels/label.c \
+	$(SRC_DIR)/local_variables/local_vars.c \
 	-lm
 
 	@echo "Build Finished."

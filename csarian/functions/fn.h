@@ -12,6 +12,6 @@ void TerminateFunctions();
 
 void AddFunction(char *name, size_t start, size_t end);
 
-int SearchFunction(char *name);
+ssize_t SearchFunction(char *name);
 
 #endif

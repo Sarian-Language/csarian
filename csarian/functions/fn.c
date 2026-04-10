@@ -38,10 +38,12 @@ void AddFunction(char *name, size_t start, size_t end)
   functions[functions_count].key = name;
   functions[functions_count].start = start;
   functions[functions_count].end = end;
+  functions[functions_count].variables_count = 0;
+  functions[functions_count].variables_size = 0;
   functions_count++;
 }
 
-int SearchFunction(char *name)
+ssize_t SearchFunction(char *name)
 {
   size_t result;
 

@@ -5,17 +5,19 @@
 #include "../definitions.h"
 #include "../error_handling/error.h"
 #include "../global_variables/global_vars.h"
+#include "../local_variables/local_vars.h"
 #include "../token_utils/token_utils.h"
 
-VariableType TokenTypeToVariableType(Token token, size_t line_num)
+VariableType TokenTypeToVariableType(Token token, ssize_t current_function, size_t line_num)
 {
   VariableType result;
-  GetGlobalVariableResult variable_result;
+  GetGlobalVariableResult global_variable_result;
+  GetLocalVariableResult local_variable_result;
 
   switch (token.type)
   {
     case TOKEN_INT_LITERAL:
-      result = INT;
+      result = INTEGER;
       break;
     case TOKEN_FLOAT_LITERAL:
       result = FLOAT;
@@ -24,11 +26,36 @@ VariableType TokenTypeToVariableType(Token token, size_t line_num)
       result = STRING;
       break;
     case TOKEN_IDENTIFIER:
-      variable_result = GetGlobalVariable(token.value);
-      if (variable_result.variable_index == -1)
-        error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
+      global_variable_result = GetGlobalVariable(token.value);
 
-      result = variable_result.variable_type;
+      if (current_function != -1)
+      {
+        local_variable_result = GetLocalVariable(current_function, token.value);
+      }
+
+      if (current_function != -1)
+      {
+        if (local_variable_result.variable_index == -1 &&
+            global_variable_result.variable_index == -1)
+          error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
+
+        if (local_variable_result.variable_index != -1)
+        {
+          result = local_variable_result.variable_type;
+        }
+        else
+        {
+          result = global_variable_result.variable_type;
+        }
+      }
+      else
+      {
+        if (global_variable_result.variable_index == -1)
+          error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
+
+        result = global_variable_result.variable_type;
+      }
+
       break;
 
     default:
@@ -45,7 +72,7 @@ TokenType VariableTypeToTokenType(VariableType type)
 
   switch (type)
   {
-    case INT:
+    case INTEGER:
       result = TOKEN_INT_LITERAL;
       break;
     case FLOAT:

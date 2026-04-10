@@ -6,7 +6,7 @@
 #include "../definitions.h"
 #include "global_vars.h"
 
-GlobalVariable *global_variables;
+Variable *global_variables;
 size_t global_variables_count;
 size_t global_variables_size;
 
@@ -14,7 +14,7 @@ void InitGlobalVariables()
 {
   global_variables_size = 32;
   global_variables_count = 0;
-  global_variables = calloc(global_variables_size, sizeof(GlobalVariable));
+  global_variables = calloc(global_variables_size, sizeof(Variable));
 }
 
 void TerminateGlobalVariables()
@@ -29,7 +29,7 @@ void CreateGlobalVariable(char *name, VariableType type, void *value)
   {
     size_t new_size = global_variables_size * 2;
 
-    GlobalVariable *tmp = realloc(global_variables, sizeof(GlobalVariable) * new_size);
+    Variable *tmp = realloc(global_variables, sizeof(Variable) * new_size);
     global_variables = tmp;
 
     global_variables_size *= 2;
@@ -59,5 +59,6 @@ GetGlobalVariableResult GetGlobalVariable(char *name)
   // Variable is not found
   result.variable_index = -1;
   result.variable_value = NULL;
+  result.variable_type = INVALID;
   return result;
 }

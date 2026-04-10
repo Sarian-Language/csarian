@@ -117,6 +117,9 @@ void PrintTokens(Token *tokens, int numTokens)
       case TOKEN_GOTO:
         printf("[TOKEN_GOTO] ");
         break;
+      case TOKEN_COMMA:
+        printf("[TOKEN_COMMA] ");
+        break;
 
       default:
         printf("[UNKNOWN TOKEN] ");

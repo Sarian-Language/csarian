@@ -28,7 +28,7 @@ void CreateLabel(char *name, size_t start)
   {
     size_t new_size = labels_size * 2;
 
-    Label *tmp = realloc(labels, sizeof(GlobalVariable) * new_size);
+    Label *tmp = realloc(labels, sizeof(Variable) * new_size);
     labels = tmp;
 
     labels_size *= 2;

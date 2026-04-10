@@ -4,22 +4,24 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 
+// Variable types
 typedef enum
 {
-  INT,
+  INTEGER,
   FLOAT,
   STRING,
   INVALID
 } VariableType;
 
-// Global variable
+// Variable struct
 typedef struct
 {
   char *key;
   VariableType type;
   void *value;
-} GlobalVariable;
+} Variable;
 
 // Token types
 typedef enum
@@ -54,6 +56,7 @@ typedef enum
   TOKEN_OR,
   TOKEN_EXCLAMATION,
   TOKEN_COLON,
+  TOKEN_COMMA,
   TOKEN_DBG_PRINT,
   TOKEN_FN,
   TOKEN_IMPORT,
@@ -87,6 +90,10 @@ typedef struct
 typedef struct
 {
   char *key;
+
+  Variable *function_variables;
+  size_t variables_count;
+  size_t variables_size;
 
   size_t start;
   size_t end;

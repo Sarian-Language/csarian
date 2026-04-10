@@ -13,17 +13,17 @@
 #include "global_variables/global_vars.h"
 #include "labels/label.h"
 #include "lexer.h"
+#include "local_variables/local_vars.h"
 #include "token_utils/token_utils.h"
 
-int Interpreter(Token *tokens, size_t tokens_count)
+void *Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t current_function,
+                  size_t line_num)
 {
+  void *Return = NULL;
+
   InitGlobalVariables();
   InitFunctions();
   InitLabels();
-
-  size_t line_num = 1;
-  
-  bool in_function = false;
 
   bool in_while = false;
   ResultTokens *while_comparison_tokens;
@@ -38,19 +38,28 @@ int Interpreter(Token *tokens, size_t tokens_count)
   size_t i;
   for (i = 0; i < tokens_count; i++)
   {
+    if (CURRENT_TOKEN.type == TOKEN_EOF)
+    {
+      break;
+    }
+
     if (CURRENT_TOKEN.type == TOKEN_EOL)
     {
-      line_num++;
+      if (!in_function)
+      {
+        line_num++;
+      }
     }
 
     if (in_function == true)
     {
-      if (i > block_end)  // Check if we reached the end of the block
+      if (i != -1 && i > block_end)  // Check if we reached the end of the block
       {
         i = original_pos;
 
         original_pos = -1;
         in_function = false;
+        current_function = -1;
         block_end = -1;
 
         continue;
@@ -62,7 +71,8 @@ int Interpreter(Token *tokens, size_t tokens_count)
       if (i > block_end)
       {
         if (ParseComparison(while_comparison_tokens->result_tokens,
-                            while_comparison_tokens->result_tokens_count, line_num))
+                            while_comparison_tokens->result_tokens_count, current_function,
+                            line_num))
         {
           i = while_block_start;
         }
@@ -85,14 +95,14 @@ int Interpreter(Token *tokens, size_t tokens_count)
         if (!file)
         {
           perror("[Main] Error opening import file");
-          return 1;
+          exit(1);
         }
 
         if (fseek(file, 0, SEEK_END) != 0)
         {
           perror("[Main] Error seeking import file end");
           fclose(file);
-          return 1;
+          exit(1);
         }
 
         long filesize = ftell(file);
@@ -100,7 +110,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
         {
           perror("[Interpreter] Error getting import file size");
           fclose(file);
-          return 1;
+          exit(1);
         }
         fseek(file, 0, SEEK_SET);
 
@@ -117,7 +127,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
           perror("[Interpreter] Error reading file completely");
           free(code);
           fclose(file);
-          return 1;
+          exit(1);
         }
 
         code[filesize] = '\0';
@@ -221,8 +231,9 @@ int Interpreter(Token *tokens, size_t tokens_count)
         ResultTokens *parent_tokens =
           GetParentTokens(&tokens[i + 1], tokens_count - (i + 1), line_num);
 
-        bool result = ParseComparison(parent_tokens->result_tokens,
-                                      parent_tokens->result_tokens_count, line_num);
+        bool result =
+          ParseComparison(parent_tokens->result_tokens, parent_tokens->result_tokens_count,
+                          current_function, line_num);
 
         if (result)
         {
@@ -336,8 +347,9 @@ int Interpreter(Token *tokens, size_t tokens_count)
       {
         while_comparison_tokens = GetParentTokens(&tokens[i + 1], tokens_count - (i + 1), line_num);
 
-        bool result = ParseComparison(while_comparison_tokens->result_tokens,
-                                      while_comparison_tokens->result_tokens_count, line_num);
+        bool result =
+          ParseComparison(while_comparison_tokens->result_tokens,
+                          while_comparison_tokens->result_tokens_count, current_function, line_num);
 
         if (result)
         {
@@ -548,7 +560,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
     if (CURRENT_TOKEN.type == TOKEN_IDENTIFIER)
     {
       // Search for functions
-      int result = SearchFunction(CURRENT_TOKEN.value);
+      ssize_t result = SearchFunction(CURRENT_TOKEN.value);
 
       if (result != -1)
       {
@@ -566,16 +578,32 @@ int Interpreter(Token *tokens, size_t tokens_count)
         i = functions[result].start - 1;
         block_end = functions[result].end;
         in_function = true;
+        current_function = result;
 
         continue;
       }
       else
       {
-        if (!(GetGlobalVariable(CURRENT_TOKEN.value).variable_index != -1))
+        if (in_function)
         {
-          if (NEXT_TOKEN_1.type != TOKEN_ASSIGNMENT && NEXT_TOKEN_1.type != TOKEN_COLON)
+          if (GetLocalVariable(current_function, CURRENT_TOKEN.value).variable_index == -1 &&
+              GetGlobalVariable(CURRENT_TOKEN.value).variable_index == -1)
           {
-            error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
+            if (NEXT_TOKEN_1.type != TOKEN_ASSIGNMENT && NEXT_TOKEN_1.type != TOKEN_COLON)
+            {
+              error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
+            }
+          }
+        }
+
+        else
+        {
+          if (GetGlobalVariable(CURRENT_TOKEN.value).variable_index == -1)
+          {
+            if (NEXT_TOKEN_1.type != TOKEN_ASSIGNMENT && NEXT_TOKEN_1.type != TOKEN_COLON)
+            {
+              error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
+            }
           }
         }
       }
@@ -585,8 +613,8 @@ int Interpreter(Token *tokens, size_t tokens_count)
     {
       ResultTokens print_tokens = *GetParentTokens(&tokens[i], tokens_count, line_num);
 
-      Token result_token = ParseBinaryOperation(print_tokens.result_tokens,
-                                                print_tokens.result_tokens_count, line_num);
+      Token result_token = ParseBinaryOperation(
+        print_tokens.result_tokens, print_tokens.result_tokens_count, current_function, line_num);
 
       if (result_token.type != TOKEN_NULL)
       {
@@ -594,24 +622,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
       }
       else
       {
-        if (print_tokens.result_tokens->value)
-        {
-          if (print_tokens.result_tokens->type == TOKEN_IDENTIFIER)
-          {
-            GetGlobalVariableResult variable = GetGlobalVariable(print_tokens.result_tokens->value);
-
-            if (variable.variable_index != -1)
-            {
-              printf("%s\n", (char *)variable.variable_value);
-            }
-            else
-              fprintf(stderr, "Variable not found.\n");
-          }
-          else
-            printf("%s\n", print_tokens.result_tokens->value);
-        }
-        else
-          printf("\n");
+        printf("\n");
       }
     }
 
@@ -619,53 +630,106 @@ int Interpreter(Token *tokens, size_t tokens_count)
     {
       if (i - 1 >= 0 && i + 1 < tokens_count)  // Make sure we don't underflow/overflow
       {
-        int variable_index;
+        ssize_t global_variable_index = -1;
+        ssize_t local_variable_index = -1;
 
         if (PREVIOUS_TOKEN.type == TOKEN_IDENTIFIER)
-          variable_index = GetGlobalVariable(PREVIOUS_TOKEN.value).variable_index;
+        {
+          global_variable_index = GetGlobalVariable(PREVIOUS_TOKEN.value).variable_index;
+
+          if (in_function)
+          {
+            local_variable_index =
+              GetLocalVariable(current_function, PREVIOUS_TOKEN.value).variable_index;
+          }
+        }
         else
           error(line_num, SYNTAX_INVALID, "Expected identifier before '='.");
 
-        // Variable exists
-        if (variable_index != -1)
+        if (in_function)
         {
-          // Parse binary operation if there's one.
           ResultTokens result_tokens =
             *GetTokensUntilEOL(&NEXT_TOKEN_1, tokens_count - (i + 1), line_num);
 
-          Token binary_operation_result = ParseBinaryOperation(
-            result_tokens.result_tokens, result_tokens.result_tokens_count, line_num);
-
-          VariableType variable_type = TokenTypeToVariableType(binary_operation_result, line_num);
-
-          if (variable_type != INVALID)
+          if (local_variable_index != -1)
           {
-            global_variables[variable_index].type = variable_type;
-            global_variables[variable_index].value = binary_operation_result.value;
+            Token binary_operation_result =
+              ParseBinaryOperation(result_tokens.result_tokens, result_tokens.result_tokens_count,
+                                   current_function, line_num);
+
+            VariableType variable_type =
+              TokenTypeToVariableType(binary_operation_result, current_function, line_num);
+
+            if (variable_type != INVALID)
+            {
+              functions[current_function].function_variables[local_variable_index].type =
+                variable_type;
+              functions[current_function].function_variables[local_variable_index].value =
+                binary_operation_result.value;
+            }
+            else
+              error(line_num, TYPE_INVALID, "Invalid variable value.");
           }
           else
-            error(line_num, TYPE_INVALID, "Invalid variable value.");
-        }
+          {
+            Token binary_operation_result =
+              ParseBinaryOperation(result_tokens.result_tokens, result_tokens.result_tokens_count,
+                                   current_function, line_num);
 
-        // Variable doesn't exist
+            VariableType variable_type =
+              TokenTypeToVariableType(binary_operation_result, current_function, line_num);
+
+            if (variable_type != INVALID)
+            {
+              CreateLocalVariable(current_function, PREVIOUS_TOKEN.value, variable_type,
+                                  binary_operation_result.value);
+            }
+            else
+            {
+              error(line_num, TYPE_INVALID, "Invalid variable value.");
+            }
+          }
+        }
         else
         {
           ResultTokens result_tokens =
             *GetTokensUntilEOL(&NEXT_TOKEN_1, tokens_count - (i + 1), line_num);
 
-          Token binary_operation_result = ParseBinaryOperation(
-            result_tokens.result_tokens, result_tokens.result_tokens_count, line_num);
-
-          VariableType variable_type = TokenTypeToVariableType(binary_operation_result, line_num);
-
-          if (variable_type != INVALID)
+          if (global_variable_index != -1)
           {
-            CreateGlobalVariable(PREVIOUS_TOKEN.value, variable_type,
-                                 binary_operation_result.value);
+            Token binary_operation_result =
+              ParseBinaryOperation(result_tokens.result_tokens, result_tokens.result_tokens_count,
+                                   current_function, line_num);
+
+            VariableType variable_type =
+              TokenTypeToVariableType(binary_operation_result, current_function, line_num);
+
+            if (variable_type != INVALID)
+            {
+              global_variables[global_variable_index].type = variable_type;
+              global_variables[global_variable_index].value = binary_operation_result.value;
+            }
+            else
+              error(line_num, TYPE_INVALID, "Invalid variable value.");
           }
           else
           {
-            error(line_num, TYPE_INVALID, "Invalid variable value.");
+            Token binary_operation_result =
+              ParseBinaryOperation(result_tokens.result_tokens, result_tokens.result_tokens_count,
+                                   current_function, line_num);
+
+            VariableType variable_type =
+              TokenTypeToVariableType(binary_operation_result, current_function, line_num);
+
+            if (variable_type != INVALID)
+            {
+              CreateGlobalVariable(PREVIOUS_TOKEN.value, variable_type,
+                                   binary_operation_result.value);
+            }
+            else
+            {
+              error(line_num, TYPE_INVALID, "Invalid variable value.");
+            }
           }
         }
       }
@@ -698,7 +762,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
           i = labels[label_index].start;
           continue;
         }
-        else 
+        else
         {
           error(line_num, SYNTAX_INVALID, "Unknown 'goto' label.");
         }
@@ -712,5 +776,7 @@ int Interpreter(Token *tokens, size_t tokens_count)
 
   TerminateGlobalVariables();
   TerminateFunctions();
-  return 0;
+  TerminateLabels();
+
+  return Return;
 }

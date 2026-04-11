@@ -1,0 +1,22 @@
+# Contributors
+
+Each entry contains the following fields:
+- Name (N)
+- Email (E)
+- Description (D)
+
+Entries are separated by blank lines.
+
+Thanks,
+
+---
+
+N: elb3nis
+E: elb3nis@proton.me
+D: Founder and maintainer of the project
+
+N: Kevin Martínez
+E: richtofenmartinez200@gmail.com
+D: Documentation website development
+
+---

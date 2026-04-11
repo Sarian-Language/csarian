@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "interpreter/interpreter.h"
-#include "lexer/lexer.h"
-#include "token_utils/token_utils.h"
+#include "csarian/core/interpreter/interpreter.h"
+#include "csarian/core/lexer/lexer.h"
+#include "csarian/utils/token_utils/token_utils.h"
 
 int main(int argc, char *argv[])
 {

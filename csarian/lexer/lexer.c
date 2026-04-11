@@ -7,10 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "debug/debug.h"
-#include "definitions.h"
-#include "error_handling/error.h"
-#include "token_utils/token_utils.h"
+#include "../debug/debug.h"
+#include "../definitions.h"
+#include "../error_handling/error.h"
+#include "../token_utils/token_utils.h"
 
 size_t current_token;
 size_t tokens_len;
@@ -64,28 +64,15 @@ ResultTokens Lexer(char *code)
       AddToken(TOKEN_EOL, NULL, NO_PRECEDENCE);
     }
 
-    // Comments / TOKEN_SLASH
-    else if (current_char == '/')
+    // Comments
+    else if (current_char == '/' && next_char == '/')
     {
-      if (next_char == '/')
-      {
-        for (size_t j = i; j < code_len; j++)
-        {
-          i++;
+      i += 2;
 
-          if (code[j] == '\n' || code[j] == '\0')
-          {
-            break;
-          }
-        }
+      while (i < code_len && code[i] != '\n')
+        i++;
 
-        i -= 2;
-        continue;
-      }
-      else
-      {
-        AddToken(TOKEN_SLASH, NULL, SLASH_PRECEDENCE);
-      }
+      continue;
     }
 
     // Strings
@@ -348,6 +335,11 @@ ResultTokens Lexer(char *code)
     else if (current_char == '*')
     {
       AddToken(TOKEN_ASTERISK, NULL, ASTERISK_PRECEDENCE);
+    }
+    // SLASH operator
+    else if (current_char == '/' && next_char != '/')
+    {
+      AddToken(TOKEN_SLASH, NULL, SLASH_PRECEDENCE);
     }
     // ASSIGNMENT / EQUAL operator
     else if (current_char == '=')

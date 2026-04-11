@@ -26,7 +26,9 @@ typedef enum
   // --- Type errors (TYPE): ---
   TYPE_INVALID,
   TYPE_INVALID_OPERANDS,
-  TYPE_INVALID_OPERATOR
+  TYPE_INVALID_OPERATOR,
+
+  INTERNAL_ERROR
 } ErrorType;
 
 int error(int line, int error_type, char *error_message);

@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "interpreter.h"
-#include "lexer.h"
+#include "interpreter/interpreter.h"
+#include "lexer/lexer.h"
 #include "token_utils/token_utils.h"
 
 int main(int argc, char *argv[])

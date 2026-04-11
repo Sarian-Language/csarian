@@ -16,7 +16,7 @@ bool Comparison(Token *tokens, size_t tokens_count, ssize_t current_function, si
 
   for (i = 0; i < tokens_count; i++)
   {
-    if (IS_COMPARISON_TOKEN(CURRENT_TOKEN.type))
+    if (IS_COMPARISON_TOKEN(I_CURRENT_TOKEN.type))
     {
       // Parse left binary operation.
       size_t left_operation_tokens_count = (i + 1);  // i+1 so we can have the TOKEN_EOF.
@@ -50,7 +50,7 @@ bool Comparison(Token *tokens, size_t tokens_count, ssize_t current_function, si
       {
         if (left_result.type == TOKEN_STRING && right_result.type == TOKEN_STRING)
         {
-          if (CURRENT_TOKEN.type == TOKEN_EQUAL || CURRENT_TOKEN.type == TOKEN_NOT_EQUAL)
+          if (I_CURRENT_TOKEN.type == TOKEN_EQUAL || I_CURRENT_TOKEN.type == TOKEN_NOT_EQUAL)
           {
             if (strcmp(left_result.value, right_result.value) == 0)
             {
@@ -96,7 +96,7 @@ bool Comparison(Token *tokens, size_t tokens_count, ssize_t current_function, si
         }
       }
 
-      switch (CURRENT_TOKEN.type)
+      switch (I_CURRENT_TOKEN.type)
       {
         case TOKEN_EQUAL:
           if (left == right)
@@ -157,7 +157,7 @@ bool ParseComparison(Token *tokens, size_t tokens_count, ssize_t current_functio
 
   for (size_t i = 0; i < tokens_count; i++)
   {
-    if (CURRENT_TOKEN.type == TOKEN_OR)
+    if (I_CURRENT_TOKEN.type == TOKEN_OR)
     {
       ResultTokens *right_tokens =
         GetTokensUntilOR(&tokens[i + 1], tokens_count - (i + 1), line_num);
@@ -185,7 +185,7 @@ bool ParseComparison(Token *tokens, size_t tokens_count, ssize_t current_functio
       }
     }
 
-    if (CURRENT_TOKEN.type == TOKEN_AND)
+    if (I_CURRENT_TOKEN.type == TOKEN_AND)
     {
       ResultTokens *right_tokens =
         GetTokensUntilOR(&tokens[i + 1], tokens_count - (i + 1), line_num);
@@ -213,7 +213,7 @@ bool ParseComparison(Token *tokens, size_t tokens_count, ssize_t current_functio
       }
     }
 
-    else if (CURRENT_TOKEN.type == TOKEN_EOF)
+    else if (I_CURRENT_TOKEN.type == TOKEN_EOF)
     {
       comparison_tokens[comparison_tokens_count].type = TOKEN_EOF;
       comparison_tokens[comparison_tokens_count].value = NULL;
@@ -236,9 +236,9 @@ bool ParseComparison(Token *tokens, size_t tokens_count, ssize_t current_functio
         comparison_tokens_size *= 2;
       }
 
-      comparison_tokens[comparison_tokens_count].type = CURRENT_TOKEN.type;
-      comparison_tokens[comparison_tokens_count].value = CURRENT_TOKEN.value;
-      comparison_tokens[comparison_tokens_count].precedence = CURRENT_TOKEN.precedence;
+      comparison_tokens[comparison_tokens_count].type = I_CURRENT_TOKEN.type;
+      comparison_tokens[comparison_tokens_count].value = I_CURRENT_TOKEN.value;
+      comparison_tokens[comparison_tokens_count].precedence = I_CURRENT_TOKEN.precedence;
       comparison_tokens_count++;
     }
   }

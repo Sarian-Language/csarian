@@ -119,11 +119,17 @@ typedef struct
   ((t) == TOKEN_EQUAL || (t) == TOKEN_NOT_EQUAL || (t) == TOKEN_GREATER || \
    (t) == TOKEN_GREATER_EQUAL || (t) == TOKEN_LESS || (t) == TOKEN_LESS_EQUAL)
 
-#define PREVIOUS_TOKEN tokens[i - 1]
-#define CURRENT_TOKEN tokens[i]
-#define NEXT_TOKEN_1 tokens[i + 1]
-#define NEXT_TOKEN_2 tokens[i + 2]
-#define NEXT_TOKEN_3 tokens[i + 3]
+#define I_PREVIOUS_TOKEN tokens[i - 1]
+#define I_CURRENT_TOKEN tokens[i]
+#define I_NEXT_TOKEN_1 tokens[i + 1]
+#define I_NEXT_TOKEN_2 tokens[i + 2]
+#define I_NEXT_TOKEN_3 tokens[i + 3]
+
+#define PTR_I_PREVIOUS_TOKEN tokens[*i - 1]
+#define PTR_I_CURRENT_TOKEN tokens[*i]
+#define PTR_I_NEXT_TOKEN_1 tokens[*i + 1]
+#define PTR_I_NEXT_TOKEN_2 tokens[*i + 2]
+#define PTR_I_NEXT_TOKEN_3 tokens[*i + 3]
 
 #define J_PREVIOUS_TOKEN tokens[j - 1]
 #define J_CURRENT_TOKEN tokens[j]

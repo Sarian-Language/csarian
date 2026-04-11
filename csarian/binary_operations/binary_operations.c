@@ -18,6 +18,73 @@
 #define INT_TO_STR_SIZE 12
 #define DOUBLE_TO_STR_SIZE 21
 
+Token TranslateVariable(Token token, ssize_t current_function, size_t line_num)
+{
+  GetGlobalVariableResult global_variable = GetGlobalVariable(token.value);
+
+  GetLocalVariableResult local_variable;
+  local_variable.variable_index = -1;
+  if (current_function != -1)
+  {
+    local_variable = GetLocalVariable(current_function, token.value);
+  }
+
+  if (current_function != -1)
+  {
+    if (local_variable.variable_index != -1)
+    {
+      VariableType variable_type = TokenTypeToVariableType(token, current_function, line_num);
+      if (variable_type == INVALID)
+        error(line_num, SYNTAX_INVALID, "Cannot perform binary operation between operand type(s).");
+
+      TokenType token_type = VariableTypeToTokenType(variable_type);
+      if (token_type == TOKEN_NULL)
+        error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
+
+      token.type = token_type;
+      token.value = (char *)local_variable.variable_value;
+    }
+
+    else if (global_variable.variable_index != -1)
+    {
+      VariableType variable_type = TokenTypeToVariableType(token, current_function, line_num);
+      if (variable_type == INVALID)
+        error(line_num, SYNTAX_INVALID, "Cannot perform binary operation between operand type(s).");
+
+      TokenType token_type = VariableTypeToTokenType(variable_type);
+      if (token_type == TOKEN_NULL)
+        error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
+
+      token.type = token_type;
+      token.value = (char *)global_variable.variable_value;
+    }
+
+    else
+      error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
+  }
+
+  else
+  {
+    if (global_variable.variable_index != -1)
+    {
+      VariableType variable_type = TokenTypeToVariableType(token, current_function, line_num);
+      if (variable_type == INVALID)
+        error(line_num, SYNTAX_INVALID, "Cannot perform binary operation between operand type(s).");
+
+      TokenType token_type = VariableTypeToTokenType(variable_type);
+      if (token_type == TOKEN_NULL)
+        error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
+
+      token.type = token_type;
+      token.value = (char *)global_variable.variable_value;
+    }
+    else
+      error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
+  }
+
+  return token;
+}
+
 Token BinaryOperation(Token *tokens, ssize_t current_function, size_t line_num)
 {
   Token result_token;
@@ -25,132 +92,15 @@ Token BinaryOperation(Token *tokens, ssize_t current_function, size_t line_num)
   // Translate variables
   if (OPERAND_A.type == TOKEN_IDENTIFIER)
   {
-    GetGlobalVariableResult global_variable = GetGlobalVariable(OPERAND_A.value);
-
-    GetLocalVariableResult local_variable;
-    local_variable.variable_index = -1;
-    if (current_function != -1)
-    {
-      local_variable = GetLocalVariable(current_function, OPERAND_A.value);
-    }
-
-    if (current_function != -1)
-    {
-      if (local_variable.variable_index != -1)
-      {
-        VariableType variable_type = TokenTypeToVariableType(OPERAND_A, current_function, line_num);
-        if (variable_type == INVALID)
-          error(line_num, SYNTAX_INVALID,
-                "Cannot perform binary operation between operand type(s).");
-
-        TokenType token_type = VariableTypeToTokenType(variable_type);
-        if (token_type == TOKEN_NULL)
-          error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
-
-        OPERAND_A.type = token_type;
-        OPERAND_A.value = (char *)local_variable.variable_value;
-      }
-      else if (global_variable.variable_index != -1)
-      {
-        VariableType variable_type = TokenTypeToVariableType(OPERAND_A, current_function, line_num);
-        if (variable_type == INVALID)
-          error(line_num, SYNTAX_INVALID,
-                "Cannot perform binary operation between operand type(s).");
-
-        TokenType token_type = VariableTypeToTokenType(variable_type);
-        if (token_type == TOKEN_NULL)
-          error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
-
-        OPERAND_A.type = token_type;
-        OPERAND_A.value = (char *)global_variable.variable_value;
-      }
-      else
-        error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier at binary operation.");
-    }
-    else
-    {
-      if (global_variable.variable_index != -1)
-      {
-        VariableType variable_type = TokenTypeToVariableType(OPERAND_A, current_function, line_num);
-        if (variable_type == INVALID)
-          error(line_num, SYNTAX_INVALID,
-                "Cannot perform binary operation between operand type(s).");
-
-        TokenType token_type = VariableTypeToTokenType(variable_type);
-        if (token_type == TOKEN_NULL)
-          error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
-
-        OPERAND_A.type = token_type;
-        OPERAND_A.value = (char *)global_variable.variable_value;
-      }
-      else
-        error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier at binary operation.");
-    }
+    Token result = TranslateVariable(OPERAND_A, current_function, line_num);
+    OPERAND_A.type = result.type;
+    OPERAND_A.value = result.value;
   }
-
   if (OPERAND_B.type == TOKEN_IDENTIFIER)
   {
-    GetGlobalVariableResult global_variable = GetGlobalVariable(OPERAND_B.value);
-
-    GetLocalVariableResult local_variable;
-    local_variable.variable_index = -1;
-    if (current_function != -1)
-    {
-      local_variable = GetLocalVariable(current_function, OPERAND_B.value);
-    }
-
-    if (current_function != -1)
-    {
-      if (local_variable.variable_index != -1)
-      {
-        VariableType variable_type = TokenTypeToVariableType(OPERAND_B, current_function, line_num);
-        if (variable_type == INVALID)
-          error(line_num, SYNTAX_INVALID,
-                "Cannot perform binary operation between operand type(s).");
-
-        TokenType token_type = VariableTypeToTokenType(variable_type);
-        if (token_type == TOKEN_NULL)
-          error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
-
-        OPERAND_B.type = token_type;
-        OPERAND_B.value = (char *)local_variable.variable_value;
-      }
-      else if (global_variable.variable_index != -1)
-      {
-        VariableType variable_type = TokenTypeToVariableType(OPERAND_B, current_function, line_num);
-        if (variable_type == INVALID)
-          error(line_num, SYNTAX_INVALID,
-                "Cannot perform binary operation between operand type(s).");
-
-        TokenType token_type = VariableTypeToTokenType(variable_type);
-        if (token_type == TOKEN_NULL)
-          error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
-
-        OPERAND_B.type = token_type;
-        OPERAND_B.value = (char *)global_variable.variable_value;
-      }
-      else
-        error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier at binary operation.");
-    }
-    else
-    {
-      if (global_variable.variable_index != -1)
-      {
-        VariableType variable_type = TokenTypeToVariableType(OPERAND_B, current_function, line_num);
-        if (variable_type == INVALID)
-          error(line_num, SYNTAX_INVALID,
-                "Cannot perform binary operation between operand type(s).");
-
-        TokenType token_type = VariableTypeToTokenType(variable_type);
-        if (token_type == TOKEN_NULL)
-          error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
-
-        OPERAND_B.type = token_type;
-        OPERAND_B.value = (char *)global_variable.variable_value;
-      }
-      else
-        error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier at binary operation.");
-    }
+    Token result = TranslateVariable(OPERAND_B, current_function, line_num);
+    OPERAND_B.type = result.type;
+    OPERAND_B.value = result.value;
   }
 
   // String operations
@@ -385,30 +335,29 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_f
     }
     else
     {
-      error(line_num, SYNTAX_INVALID,
-            "Incomplete binary operation or invalid input (binary_operations).");
+      error(line_num, SYNTAX_INCOMPLETE_EXPRESSION, "Incomplete binary operation.");
     }
   }
 
   ssize_t i;
   for (i = 0; i < tokens_count; i++)
   {
-    if (IS_BINARY_OPERATOR(CURRENT_TOKEN.type))
+    if (IS_BINARY_OPERATOR(I_CURRENT_TOKEN.type))
     {
-      if (i - 1 > -1 && i + 1 <= tokens_count && IS_VALID_BINARY_OPERAND(PREVIOUS_TOKEN.type) &&
-          IS_VALID_BINARY_OPERAND(NEXT_TOKEN_1.type))
+      if (i - 1 >= 0 && i + 1 <= tokens_count && IS_VALID_BINARY_OPERAND(I_PREVIOUS_TOKEN.type) &&
+          IS_VALID_BINARY_OPERAND(I_NEXT_TOKEN_1.type))
       {
         // Next operation has more precedence.
-        if (NEXT_TOKEN_2.precedence > CURRENT_TOKEN.precedence)
+        if (I_NEXT_TOKEN_2.precedence > I_CURRENT_TOKEN.precedence)
         {
-          operation[0] = NEXT_TOKEN_1;
-          operation[1] = NEXT_TOKEN_2;
-          operation[2] = NEXT_TOKEN_3;
+          operation[0] = I_NEXT_TOKEN_1;
+          operation[1] = I_NEXT_TOKEN_2;
+          operation[2] = I_NEXT_TOKEN_3;
 
           result = BinaryOperation(operation, current_function, line_num);
-          NEXT_TOKEN_1.type = result.type;
-          NEXT_TOKEN_1.value = result.value;
-          NEXT_TOKEN_1.precedence = result.precedence;
+          I_NEXT_TOKEN_1.type = result.type;
+          I_NEXT_TOKEN_1.value = result.value;
+          I_NEXT_TOKEN_1.precedence = result.precedence;
 
           // Shift tokens
           size_t shift_start = i + 2;
@@ -419,7 +368,6 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_f
             tokens[j] = tokens[j + total_tokens_to_shift];
           }
 
-          // Decrease the token count since we removed two
           tokens_count -= total_tokens_to_shift;
 
           i -= total_tokens_to_shift;
@@ -428,14 +376,14 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_f
         // Next operation has no precedence.
         else
         {
-          operation[0] = PREVIOUS_TOKEN;
-          operation[1] = CURRENT_TOKEN;
-          operation[2] = NEXT_TOKEN_1;
+          operation[0] = I_PREVIOUS_TOKEN;
+          operation[1] = I_CURRENT_TOKEN;
+          operation[2] = I_NEXT_TOKEN_1;
 
           result = BinaryOperation(operation, current_function, line_num);
-          PREVIOUS_TOKEN.type = result.type;
-          PREVIOUS_TOKEN.value = result.value;
-          PREVIOUS_TOKEN.precedence = result.precedence;
+          I_PREVIOUS_TOKEN.type = result.type;
+          I_PREVIOUS_TOKEN.value = result.value;
+          I_PREVIOUS_TOKEN.precedence = result.precedence;
 
           // Shift tokens
           size_t shift_start = i;
@@ -446,7 +394,6 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_f
             tokens[j] = tokens[j + total_tokens_to_shift];
           }
 
-          // Decrease the token count since we removed two
           tokens_count -= total_tokens_to_shift;
 
           i -= total_tokens_to_shift;

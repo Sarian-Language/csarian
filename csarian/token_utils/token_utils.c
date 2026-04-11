@@ -105,7 +105,7 @@ ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_nu
 
   for (size_t i = 0; i < tokens_count; i++)
   {
-    if (CURRENT_TOKEN.type == TOKEN_EOF)
+    if (I_CURRENT_TOKEN.type == TOKEN_EOF)
     {
       if (result->result_tokens_count > result_tokens_size)
       {
@@ -127,7 +127,7 @@ ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_nu
       return result;
     }
 
-    else if (CURRENT_TOKEN.type == TOKEN_LPARENT)
+    else if (I_CURRENT_TOKEN.type == TOKEN_LPARENT)
     {
       for (size_t j = i + 1; j < tokens_count; j++)
       {
@@ -218,7 +218,7 @@ ResultTokens *GetTokensUntilEOL(Token *tokens, size_t tokens_count, size_t line_
 
   for (size_t i = 0; i < tokens_count; i++)
   {
-    if (CURRENT_TOKEN.type == TOKEN_EOF)
+    if (I_CURRENT_TOKEN.type == TOKEN_EOF)
     {
       if (result->result_tokens_count >= result_tokens_size)
       {
@@ -240,7 +240,7 @@ ResultTokens *GetTokensUntilEOL(Token *tokens, size_t tokens_count, size_t line_
       return result;
     }
 
-    else if (CURRENT_TOKEN.type == TOKEN_EOL)
+    else if (I_CURRENT_TOKEN.type == TOKEN_EOL)
     {
       if (result->result_tokens_count >= result_tokens_size)
       {
@@ -276,9 +276,9 @@ ResultTokens *GetTokensUntilEOL(Token *tokens, size_t tokens_count, size_t line_
         result->result_tokens = tmp;
       }
 
-      result->result_tokens[result->result_tokens_count].type = CURRENT_TOKEN.type;
-      result->result_tokens[result->result_tokens_count].value = CURRENT_TOKEN.value;
-      result->result_tokens[result->result_tokens_count].precedence = CURRENT_TOKEN.precedence;
+      result->result_tokens[result->result_tokens_count].type = I_CURRENT_TOKEN.type;
+      result->result_tokens[result->result_tokens_count].value = I_CURRENT_TOKEN.value;
+      result->result_tokens[result->result_tokens_count].precedence = I_CURRENT_TOKEN.precedence;
       result->result_tokens_count++;
     }
   }
@@ -306,7 +306,7 @@ ResultTokens *GetTokensUntilEOF(Token *tokens, size_t tokens_count, size_t line_
 
   for (size_t i = 0; i < tokens_count; i++)
   {
-    if (CURRENT_TOKEN.type == TOKEN_EOF)
+    if (I_CURRENT_TOKEN.type == TOKEN_EOF)
     {
       if (result->result_tokens_count >= result_tokens_size)
       {
@@ -328,7 +328,7 @@ ResultTokens *GetTokensUntilEOF(Token *tokens, size_t tokens_count, size_t line_
       return result;
     }
 
-    else if (CURRENT_TOKEN.type == TOKEN_EOF)
+    else if (I_CURRENT_TOKEN.type == TOKEN_EOF)
     {
       if (result->result_tokens_count >= result_tokens_size)
       {
@@ -364,9 +364,9 @@ ResultTokens *GetTokensUntilEOF(Token *tokens, size_t tokens_count, size_t line_
         result->result_tokens = tmp;
       }
 
-      result->result_tokens[result->result_tokens_count].type = CURRENT_TOKEN.type;
-      result->result_tokens[result->result_tokens_count].value = CURRENT_TOKEN.value;
-      result->result_tokens[result->result_tokens_count].precedence = CURRENT_TOKEN.precedence;
+      result->result_tokens[result->result_tokens_count].type = I_CURRENT_TOKEN.type;
+      result->result_tokens[result->result_tokens_count].value = I_CURRENT_TOKEN.value;
+      result->result_tokens[result->result_tokens_count].precedence = I_CURRENT_TOKEN.precedence;
       result->result_tokens_count++;
     }
   }
@@ -394,7 +394,7 @@ ResultTokens *GetTokensUntilOR(Token *tokens, size_t tokens_count, size_t line_n
 
   for (size_t i = 0; i < tokens_count; i++)
   {
-    if (CURRENT_TOKEN.type == TOKEN_EOF)
+    if (I_CURRENT_TOKEN.type == TOKEN_EOF)
     {
       if (result->result_tokens_count >= result_tokens_size)
       {
@@ -416,7 +416,7 @@ ResultTokens *GetTokensUntilOR(Token *tokens, size_t tokens_count, size_t line_n
       return result;
     }
 
-    else if (CURRENT_TOKEN.type == TOKEN_OR)
+    else if (I_CURRENT_TOKEN.type == TOKEN_OR)
     {
       if (result->result_tokens_count >= result_tokens_size)
       {
@@ -452,9 +452,9 @@ ResultTokens *GetTokensUntilOR(Token *tokens, size_t tokens_count, size_t line_n
         result->result_tokens = tmp;
       }
 
-      result->result_tokens[result->result_tokens_count].type = CURRENT_TOKEN.type;
-      result->result_tokens[result->result_tokens_count].value = CURRENT_TOKEN.value;
-      result->result_tokens[result->result_tokens_count].precedence = CURRENT_TOKEN.precedence;
+      result->result_tokens[result->result_tokens_count].type = I_CURRENT_TOKEN.type;
+      result->result_tokens[result->result_tokens_count].value = I_CURRENT_TOKEN.value;
+      result->result_tokens[result->result_tokens_count].precedence = I_CURRENT_TOKEN.precedence;
       result->result_tokens_count++;
     }
   }

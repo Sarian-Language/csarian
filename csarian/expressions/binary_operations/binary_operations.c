@@ -4,19 +4,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "csarian/utils/debug/debug.h"
-#include "csarian/definitions.h"
 #include "csarian/core/error_handling/error.h"
+#include "csarian/definitions.h"
 #include "csarian/runtime/variables/global_variables/global_vars.h"
 #include "csarian/runtime/variables/local_variables/local_vars.h"
+#include "csarian/utils/debug/debug.h"
 #include "csarian/utils/token_utils/token_utils.h"
 
 #define OPERAND_A tokens[0]
 #define OPERATOR tokens[1]
 #define OPERAND_B tokens[2]
-
-#define INT_TO_STR_SIZE 12
-#define DOUBLE_TO_STR_SIZE 21
 
 Token TranslateVariable(Token token, ssize_t current_function, size_t line_num)
 {

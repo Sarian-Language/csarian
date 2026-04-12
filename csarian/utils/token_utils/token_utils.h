@@ -20,6 +20,8 @@ ResultTokens *GetTokensUntilEOL(Token *tokens, size_t tokens_count, size_t line_
 
 ResultTokens *GetTokensUntilEOF(Token *tokens, size_t tokens_count, size_t line_num);
 
+ResultTokens *GetTokensUntilCOMMA(Token *tokens, size_t tokens_count, size_t line_num);
+
 ResultTokens *GetTokensUntilOR(Token *tokens, size_t tokens_count, size_t line_num);
 
 #endif

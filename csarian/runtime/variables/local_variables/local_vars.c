@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "csarian/definitions.h"
 #include "csarian/core/error_handling/error.h"
+#include "csarian/definitions.h"
 #include "csarian/runtime/functions/fn.h"
 #include "local_vars.h"
 

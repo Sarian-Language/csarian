@@ -7,9 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "csarian/utils/debug/debug.h"
-#include "csarian/definitions.h"
 #include "csarian/core/error_handling/error.h"
+#include "csarian/definitions.h"
+#include "csarian/utils/debug/debug.h"
 #include "csarian/utils/token_utils/token_utils.h"
 
 size_t current_token;

@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "csarian/definitions.h"
 #include "csarian/core/error_handling/error.h"
+#include "csarian/definitions.h"
 #include "csarian/runtime/variables/global_variables/global_vars.h"
 #include "csarian/runtime/variables/local_variables/local_vars.h"
 #include "csarian/utils/token_utils/token_utils.h"
@@ -329,6 +329,94 @@ ResultTokens *GetTokensUntilEOF(Token *tokens, size_t tokens_count, size_t line_
     }
 
     else if (I_CURRENT_TOKEN.type == TOKEN_EOF)
+    {
+      if (result->result_tokens_count >= result_tokens_size)
+      {
+        size_t new_size = result_tokens_size + 1;
+
+        Token *tmp = realloc(result->result_tokens, (new_size) * sizeof(Token));
+        if (!tmp)
+          error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");
+
+        result_tokens_size++;
+        result->result_tokens = tmp;
+      }
+
+      result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
+      result->result_tokens[result->result_tokens_count].value = NULL;
+      result->result_tokens[result->result_tokens_count].precedence = NO_PRECEDENCE;
+      result->result_tokens_count++;
+
+      return result;
+    }
+
+    else
+    {
+      if (result->result_tokens_count >= result_tokens_size)
+      {
+        size_t new_size = result_tokens_size * 2;
+
+        Token *tmp = realloc(result->result_tokens, (new_size) * sizeof(Token));
+        if (!tmp)
+          error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");
+
+        result_tokens_size *= 2;
+        result->result_tokens = tmp;
+      }
+
+      result->result_tokens[result->result_tokens_count].type = I_CURRENT_TOKEN.type;
+      result->result_tokens[result->result_tokens_count].value = I_CURRENT_TOKEN.value;
+      result->result_tokens[result->result_tokens_count].precedence = I_CURRENT_TOKEN.precedence;
+      result->result_tokens_count++;
+    }
+  }
+
+  result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
+  result->result_tokens[result->result_tokens_count].value = NULL;
+  result->result_tokens[result->result_tokens_count].precedence = NO_PRECEDENCE;
+  result->result_tokens_count++;
+
+  return result;
+}
+
+ResultTokens *GetTokensUntilCOMMA(Token *tokens, size_t tokens_count, size_t line_num)
+{
+  ResultTokens *result = malloc(sizeof(ResultTokens));
+  if (!result)
+    error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() result.");
+
+  result->result_tokens_count = 0;
+  size_t result_tokens_size = 16;
+
+  result->result_tokens = calloc(result_tokens_size, sizeof(Token));
+  if (!result->result_tokens)
+    error(line_num, MEM_CALLOC_FAILED, "Failed to calloc() result_tokens.");
+
+  for (size_t i = 0; i < tokens_count; i++)
+  {
+    if (I_CURRENT_TOKEN.type == TOKEN_EOF)
+    {
+      if (result->result_tokens_count >= result_tokens_size)
+      {
+        size_t new_size = result_tokens_size + 1;
+
+        Token *tmp = realloc(result->result_tokens, (new_size) * sizeof(Token));
+        if (!tmp)
+          error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");
+
+        result_tokens_size++;
+        result->result_tokens = tmp;
+      }
+
+      result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
+      result->result_tokens[result->result_tokens_count].value = NULL;
+      result->result_tokens[result->result_tokens_count].precedence = NO_PRECEDENCE;
+      result->result_tokens_count++;
+
+      return result;
+    }
+
+    else if (I_CURRENT_TOKEN.type == TOKEN_COMMA)
     {
       if (result->result_tokens_count >= result_tokens_size)
       {

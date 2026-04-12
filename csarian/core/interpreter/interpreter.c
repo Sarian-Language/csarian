@@ -4,18 +4,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "csarian/core/error_handling/error.h"
+#include "csarian/core/interpreter/interpreter.h"
+#include "csarian/core/lexer/lexer.h"
+#include "csarian/definitions.h"
 #include "csarian/expressions/binary_operations/binary_operations.h"
 #include "csarian/expressions/comparison/comparison.h"
-#include "csarian/utils/debug/debug.h"
-#include "csarian/utils/token_utils/token_utils.h"
-#include "csarian/core/error_handling/error.h"
-#include "csarian/core/lexer/lexer.h"
-#include "csarian/core/interpreter/interpreter.h"
 #include "csarian/runtime/functions/fn.h"
 #include "csarian/runtime/labels/label.h"
 #include "csarian/runtime/variables/global_variables/global_vars.h"
 #include "csarian/runtime/variables/local_variables/local_vars.h"
-#include "csarian/definitions.h"
+#include "csarian/utils/debug/debug.h"
+#include "csarian/utils/token_utils/token_utils.h"
 
 static void IgnoreElseBlock(Token *tokens, size_t tokens_count, size_t *i, size_t *line_num)
 {
@@ -66,7 +66,8 @@ static void IgnoreElseBlock(Token *tokens, size_t tokens_count, size_t *i, size_
   }
 }
 
-static void HandleFN(Token *tokens, size_t tokens_count, size_t *i, size_t *line_num)
+static void HandleFN(Token *tokens, size_t tokens_count, size_t *i, ssize_t current_function,
+                     size_t *line_num)
 {
   if (*i + 1 <= tokens_count && PTR_I_NEXT_TOKEN_1.type == TOKEN_IDENTIFIER)
   {
@@ -118,7 +119,37 @@ static void HandleFN(Token *tokens, size_t tokens_count, size_t *i, size_t *line
       if (fn_block_end == -1)
         error(*line_num, SYNTAX_INCOMPLETE_BRACE, "Incomplete braces inside function.");
 
-      AddFunction(PTR_I_NEXT_TOKEN_1.value, fn_block_start, fn_block_end);
+      AddFunction(PTR_I_NEXT_TOKEN_1.value, 0, fn_block_start, fn_block_end);
+
+      // Arguments
+      if (parent_tokens->result_tokens_count > 1)
+      {
+        for (size_t j = 0; j < parent_tokens->result_tokens_count; j++)
+        {
+          if (parent_tokens->result_tokens[j].type == TOKEN_IDENTIFIER)
+          {
+            CreateLocalVariable(functions_count - 1, parent_tokens->result_tokens[j].value, INVALID,
+                                "NULL");
+            functions[functions_count - 1].arguments++;
+          }
+
+          else if (parent_tokens->result_tokens[j].type == TOKEN_COMMA)
+          {
+            // Ignore
+          }
+
+          else if (parent_tokens->result_tokens[j].type == TOKEN_EOF)
+          {
+            break;
+          }
+
+          else
+          {
+            error(*line_num, SYNTAX_INVALID,
+                  "Only identifiers and commas are allowed in function arguments.");
+          }
+        }
+      }
 
       *i = fn_block_end + 1;
     }
@@ -151,6 +182,35 @@ static void HandleIdentifier(Token *tokens, size_t tokens_count, size_t *i, ssiz
         *original_pos = j;
         break;
       }
+    }
+
+    // Arguments
+    if (PTR_I_NEXT_TOKEN_1.type == TOKEN_LPARENT)
+    {
+      ResultTokens parent_tokens = *GetParentTokens(&tokens[*i + 1], tokens_count, line_num);
+
+      ResultVariables *arguments =
+        GetFunctionArguments(parent_tokens.result_tokens, parent_tokens.result_tokens_count,
+                             *current_function, line_num);
+
+      if (arguments->result_variables_count != functions[result].arguments)
+      {
+        if (arguments->result_variables_count > functions[result].arguments)
+          error(line_num, TYPE_INVALID_ARGUMENTS, "Expected less arguments for function call.");
+
+        if (arguments->result_variables_count < functions[result].arguments)
+          error(line_num, TYPE_INVALID_ARGUMENTS, "Expected more arguments for function call.");
+      }
+
+      for (size_t k = 0; k < functions[result].arguments; k++)
+      {
+        functions[result].function_variables[k].type = arguments->result_variables[k].type;
+        functions[result].function_variables[k].value = arguments->result_variables[k].value;
+      }
+    }
+    else
+    {
+      error(line_num, SYNTAX_INVALID, "Expected '(' after function call.");
     }
 
     *i = functions[result].start - 1;
@@ -408,7 +468,7 @@ void *Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
 
     if (I_CURRENT_TOKEN.type == TOKEN_FN)
     {
-      HandleFN(tokens, tokens_count, &i, &line_num);
+      HandleFN(tokens, tokens_count, &i, current_function, &line_num);
       continue;
     }
 

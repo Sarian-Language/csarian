@@ -91,6 +91,8 @@ typedef struct
 {
   char *key;
 
+  size_t arguments;
+
   Variable *function_variables;
   size_t variables_count;
   size_t variables_size;
@@ -107,6 +109,9 @@ typedef struct
 } Label;
 
 // Macros
+#define INT_TO_STR_SIZE 12
+#define DOUBLE_TO_STR_SIZE 21
+
 #define IS_BINARY_OPERATOR(t)                                                                \
   ((t) == TOKEN_PLUS || (t) == TOKEN_MINUS || (t) == TOKEN_ASTERISK || (t) == TOKEN_SLASH || \
    (t) == TOKEN_PERCENT)

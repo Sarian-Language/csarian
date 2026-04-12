@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "csarian/core/error_handling/error.h"
+#include "csarian/definitions.h"
 #include "csarian/expressions/binary_operations/binary_operations.h"
 #include "csarian/utils/debug/debug.h"
-#include "csarian/definitions.h"
-#include "csarian/core/error_handling/error.h"
 #include "csarian/utils/token_utils/token_utils.h"
 
 bool Comparison(Token *tokens, size_t tokens_count, ssize_t current_function, size_t line_num)

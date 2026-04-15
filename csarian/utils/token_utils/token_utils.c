@@ -203,7 +203,8 @@ ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_nu
   return result;
 }
 
-ResultTokens *GetTokensUntilX(TokenType token_type, Token *tokens, size_t tokens_count, size_t line_num)
+ResultTokens *GetTokensUntilX(TokenType token_type, Token *tokens, size_t tokens_count,
+                              size_t line_num)
 {
   ResultTokens *result = malloc(sizeof(ResultTokens));
   if (!result)

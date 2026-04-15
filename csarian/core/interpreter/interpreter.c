@@ -287,7 +287,7 @@ static void HandleAssignment(Token *tokens, size_t tokens_count, size_t i, ssize
     if (in_function)
     {
       ResultTokens result_tokens =
-        *GetTokensUntilEOL(&I_NEXT_TOKEN_1, tokens_count - (i + 1), line_num);
+        *GetTokensUntilX(TOKEN_EOL, &I_NEXT_TOKEN_1, tokens_count - (i + 1), line_num);
 
       if (local_variable_index != -1)
       {
@@ -330,7 +330,7 @@ static void HandleAssignment(Token *tokens, size_t tokens_count, size_t i, ssize
     else
     {
       ResultTokens result_tokens =
-        *GetTokensUntilEOL(&I_NEXT_TOKEN_1, tokens_count - (i + 1), line_num);
+        *GetTokensUntilX(TOKEN_EOL, &I_NEXT_TOKEN_1, tokens_count - (i + 1), line_num);
 
       if (global_variable_index != -1)
       {

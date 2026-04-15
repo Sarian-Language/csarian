@@ -84,7 +84,7 @@ ResultVariables *GetFunctionArguments(Token *tokens, size_t tokens_count, ssize_
       if (i > last_pos)
       {
         ResultTokens argument_tokens =
-          *GetTokensUntilCOMMA(&tokens[last_pos], tokens_count - last_pos, line_num);
+          *GetTokensUntilX(TOKEN_COMMA, &tokens[last_pos], tokens_count - last_pos, line_num);
         Token argument_result =
           ParseBinaryOperation(argument_tokens.result_tokens, argument_tokens.result_tokens_count,
                                current_function, line_num);
@@ -117,7 +117,7 @@ ResultVariables *GetFunctionArguments(Token *tokens, size_t tokens_count, ssize_
       }
       else
       {
-        if (!tokens_count == 1 && !I_CURRENT_TOKEN.type == TOKEN_EOF)
+        if (!(tokens_count == 1) && (!I_CURRENT_TOKEN.type) == TOKEN_EOF)
         {
           error(line_num, SYNTAX_INVALID, "Invalid comma.");
         }

@@ -1,0 +1,158 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I.",
+      "-o",
+      "build/sarian",
+      "csarian/main.c"
+    ],
+    "directory": "/home/elb3nis/Desktop/Sarian-github/csarian",
+    "file": "/home/elb3nis/Desktop/Sarian-github/csarian/csarian/main.c",
+    "output": "/home/elb3nis/Desktop/Sarian-github/csarian/build/sarian"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I.",
+      "-o",
+      "build/sarian",
+      "csarian/core/error_handling/error.c"
+    ],
+    "directory": "/home/elb3nis/Desktop/Sarian-github/csarian",
+    "file": "/home/elb3nis/Desktop/Sarian-github/csarian/csarian/core/error_handling/error.c",
+    "output": "/home/elb3nis/Desktop/Sarian-github/csarian/build/sarian"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I.",
+      "-o",
+      "build/sarian",
+      "csarian/core/lexer/lexer.c"
+    ],
+    "directory": "/home/elb3nis/Desktop/Sarian-github/csarian",
+    "file": "/home/elb3nis/Desktop/Sarian-github/csarian/csarian/core/lexer/lexer.c",
+    "output": "/home/elb3nis/Desktop/Sarian-github/csarian/build/sarian"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I.",
+      "-o",
+      "build/sarian",
+      "csarian/core/interpreter/interpreter.c"
+    ],
+    "directory": "/home/elb3nis/Desktop/Sarian-github/csarian",
+    "file": "/home/elb3nis/Desktop/Sarian-github/csarian/csarian/core/interpreter/interpreter.c",
+    "output": "/home/elb3nis/Desktop/Sarian-github/csarian/build/sarian"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I.",
+      "-o",
+      "build/sarian",
+      "csarian/utils/debug/debug.c"
+    ],
+    "directory": "/home/elb3nis/Desktop/Sarian-github/csarian",
+    "file": "/home/elb3nis/Desktop/Sarian-github/csarian/csarian/utils/debug/debug.c",
+    "output": "/home/elb3nis/Desktop/Sarian-github/csarian/build/sarian"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I.",
+      "-o",
+      "build/sarian",
+      "csarian/runtime/functions/fn.c"
+    ],
+    "directory": "/home/elb3nis/Desktop/Sarian-github/csarian",
+    "file": "/home/elb3nis/Desktop/Sarian-github/csarian/csarian/runtime/functions/fn.c",
+    "output": "/home/elb3nis/Desktop/Sarian-github/csarian/build/sarian"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I.",
+      "-o",
+      "build/sarian",
+      "csarian/expressions/binary_operations/binary_operations.c"
+    ],
+    "directory": "/home/elb3nis/Desktop/Sarian-github/csarian",
+    "file": "/home/elb3nis/Desktop/Sarian-github/csarian/csarian/expressions/binary_operations/binary_operations.c",
+    "output": "/home/elb3nis/Desktop/Sarian-github/csarian/build/sarian"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I.",
+      "-o",
+      "build/sarian",
+      "csarian/runtime/variables/global_variables/global_vars.c"
+    ],
+    "directory": "/home/elb3nis/Desktop/Sarian-github/csarian",
+    "file": "/home/elb3nis/Desktop/Sarian-github/csarian/csarian/runtime/variables/global_variables/global_vars.c",
+    "output": "/home/elb3nis/Desktop/Sarian-github/csarian/build/sarian"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I.",
+      "-o",
+      "build/sarian",
+      "csarian/expressions/comparison/comparison.c"
+    ],
+    "directory": "/home/elb3nis/Desktop/Sarian-github/csarian",
+    "file": "/home/elb3nis/Desktop/Sarian-github/csarian/csarian/expressions/comparison/comparison.c",
+    "output": "/home/elb3nis/Desktop/Sarian-github/csarian/build/sarian"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I.",
+      "-o",
+      "build/sarian",
+      "csarian/utils/token_utils/token_utils.c"
+    ],
+    "directory": "/home/elb3nis/Desktop/Sarian-github/csarian",
+    "file": "/home/elb3nis/Desktop/Sarian-github/csarian/csarian/utils/token_utils/token_utils.c",
+    "output": "/home/elb3nis/Desktop/Sarian-github/csarian/build/sarian"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I.",
+      "-o",
+      "build/sarian",
+      "csarian/runtime/labels/label.c"
+    ],
+    "directory": "/home/elb3nis/Desktop/Sarian-github/csarian",
+    "file": "/home/elb3nis/Desktop/Sarian-github/csarian/csarian/runtime/labels/label.c",
+    "output": "/home/elb3nis/Desktop/Sarian-github/csarian/build/sarian"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "-I.",
+      "-o",
+      "build/sarian",
+      "csarian/runtime/variables/local_variables/local_vars.c"
+    ],
+    "directory": "/home/elb3nis/Desktop/Sarian-github/csarian",
+    "file": "/home/elb3nis/Desktop/Sarian-github/csarian/csarian/runtime/variables/local_variables/local_vars.c",
+    "output": "/home/elb3nis/Desktop/Sarian-github/csarian/build/sarian"
+  }
+]

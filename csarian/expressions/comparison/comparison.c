@@ -36,7 +36,7 @@ bool Comparison(Token *tokens, size_t tokens_count, ssize_t current_function, si
       // Parse right binary operation.
       size_t right_operation_tokens_count = tokens_count - (i + 1);
       ResultTokens *right_operation_tokens =
-        GetTokensUntilEOF(&tokens[i + 1], tokens_count - 1, line_num);
+        GetTokensUntilX(TOKEN_EOF, &tokens[i + 1], tokens_count - 1, line_num);
 
       Token right_result = ParseBinaryOperation(right_operation_tokens->result_tokens,
                                                 right_operation_tokens->result_tokens_count,
@@ -160,7 +160,7 @@ bool ParseComparison(Token *tokens, size_t tokens_count, ssize_t current_functio
     if (I_CURRENT_TOKEN.type == TOKEN_OR)
     {
       ResultTokens *right_tokens =
-        GetTokensUntilOR(&tokens[i + 1], tokens_count - (i + 1), line_num);
+        GetTokensUntilX(TOKEN_OR, &tokens[i + 1], tokens_count - (i + 1), line_num);
 
       // Add EOF token to the left tokens.
       comparison_tokens[comparison_tokens_count].type = TOKEN_EOF;
@@ -188,7 +188,7 @@ bool ParseComparison(Token *tokens, size_t tokens_count, ssize_t current_functio
     if (I_CURRENT_TOKEN.type == TOKEN_AND)
     {
       ResultTokens *right_tokens =
-        GetTokensUntilOR(&tokens[i + 1], tokens_count - (i + 1), line_num);
+        GetTokensUntilX(TOKEN_OR, &tokens[i + 1], tokens_count - (i + 1), line_num);
 
       // Add EOF token to the left tokens.
       comparison_tokens[comparison_tokens_count].type = TOKEN_EOF;

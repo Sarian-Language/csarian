@@ -16,12 +16,6 @@ TokenType VariableTypeToTokenType(VariableType type);
 
 ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_num);
 
-ResultTokens *GetTokensUntilEOL(Token *tokens, size_t tokens_count, size_t line_num);
-
-ResultTokens *GetTokensUntilEOF(Token *tokens, size_t tokens_count, size_t line_num);
-
-ResultTokens *GetTokensUntilCOMMA(Token *tokens, size_t tokens_count, size_t line_num);
-
-ResultTokens *GetTokensUntilOR(Token *tokens, size_t tokens_count, size_t line_num);
+ResultTokens *GetTokensUntilX(TokenType token_type, Token *tokens, size_t tokens_count, size_t line_num);
 
 #endif

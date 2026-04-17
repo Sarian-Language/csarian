@@ -13,6 +13,6 @@ typedef struct
 
 void CreateLocalVariable(size_t function_index, char *key, VariableType type, char *value);
 
-GetLocalVariableResult GetLocalVariable(size_t function_index, char *name);
+GetLocalVariableResult GetLocalVariable(ssize_t function_index, char *name);
 
 #endif

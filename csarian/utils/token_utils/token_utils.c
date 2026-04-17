@@ -103,6 +103,8 @@ ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_nu
   if (!result->result_tokens)
     error(line_num, MEM_CALLOC_FAILED, "Failed to calloc() result_tokens.");
 
+  size_t depth = 0;
+
   for (size_t i = 0; i < tokens_count; i++)
   {
     if (I_CURRENT_TOKEN.type == TOKEN_EOF)
@@ -132,31 +134,76 @@ ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_nu
       for (size_t j = i + 1; j < tokens_count; j++)
       {
         if (J_CURRENT_TOKEN.type == TOKEN_LPARENT)
-          error(line_num, SYNTAX_INCOMPLETE_PARENT, "Expected ')'.");
-
-        else if (J_CURRENT_TOKEN.type == TOKEN_RPARENT)
         {
+          depth++;
+
           if (result->result_tokens_count >= result_tokens_size)
           {
-            size_t new_size = result_tokens_size + 1;
+            size_t new_size = result_tokens_size * 2;
 
             Token *tmp = realloc(result->result_tokens, (new_size) * sizeof(Token));
             if (!tmp)
               error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");
 
-            result_tokens_size++;
+            result_tokens_size *= 2;
             result->result_tokens = tmp;
           }
 
-          result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
-          result->result_tokens[result->result_tokens_count].value = NULL;
-          result->result_tokens[result->result_tokens_count].precedence = NO_PRECEDENCE;
+          result->result_tokens[result->result_tokens_count].type = J_CURRENT_TOKEN.type;
+          result->result_tokens[result->result_tokens_count].value = J_CURRENT_TOKEN.value;
+          result->result_tokens[result->result_tokens_count].precedence =
+            J_CURRENT_TOKEN.precedence;
           result->result_tokens_count++;
-
-          return result;
         }
 
-        else if (J_CURRENT_TOKEN.type == TOKEN_EOF)
+        else if (J_CURRENT_TOKEN.type == TOKEN_RPARENT)
+        {
+          if (depth == 0)
+          {
+            if (result->result_tokens_count >= result_tokens_size)
+            {
+              size_t new_size = result_tokens_size + 1;
+
+              Token *tmp = realloc(result->result_tokens, (new_size) * sizeof(Token));
+              if (!tmp)
+                error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");
+
+              result_tokens_size++;
+              result->result_tokens = tmp;
+            }
+
+            result->result_tokens[result->result_tokens_count].type = TOKEN_EOF;
+            result->result_tokens[result->result_tokens_count].value = NULL;
+            result->result_tokens[result->result_tokens_count].precedence = NO_PRECEDENCE;
+            result->result_tokens_count++;
+
+            return result;
+          }
+          else
+          {
+            depth--;
+
+            if (result->result_tokens_count >= result_tokens_size)
+            {
+              size_t new_size = result_tokens_size * 2;
+
+              Token *tmp = realloc(result->result_tokens, (new_size) * sizeof(Token));
+              if (!tmp)
+                error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() result_tokens.");
+
+              result_tokens_size *= 2;
+              result->result_tokens = tmp;
+            }
+
+            result->result_tokens[result->result_tokens_count].type = J_CURRENT_TOKEN.type;
+            result->result_tokens[result->result_tokens_count].value = J_CURRENT_TOKEN.value;
+            result->result_tokens[result->result_tokens_count].precedence =
+              J_CURRENT_TOKEN.precedence;
+            result->result_tokens_count++;
+          }
+        }
+
+        else if (J_CURRENT_TOKEN.type == TOKEN_EOF && depth != 0)
           error(line_num, SYNTAX_INCOMPLETE_PARENT, "Incomplete parents.");
 
         else

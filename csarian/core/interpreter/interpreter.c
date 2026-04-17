@@ -98,7 +98,7 @@ static void HandleFN(Token *tokens, size_t tokens_count, size_t *i, ssize_t curr
         {
           if (fn_block_start == -1)
           {
-            fn_block_start = j + 1;
+            fn_block_start = j;
           }
           else
             depth++;
@@ -108,7 +108,7 @@ static void HandleFN(Token *tokens, size_t tokens_count, size_t *i, ssize_t curr
         {
           if (depth == 0)
           {
-            fn_block_end = j - 1;
+            fn_block_end = j;
             break;
           }
           else
@@ -151,7 +151,7 @@ static void HandleFN(Token *tokens, size_t tokens_count, size_t *i, ssize_t curr
         }
       }
 
-      *i = fn_block_end + 1;
+      *i = fn_block_end;
     }
     else
     {
@@ -213,7 +213,7 @@ static void HandleIdentifier(Token *tokens, size_t tokens_count, size_t *i, ssiz
       error(line_num, SYNTAX_INVALID, "Expected '(' after function call.");
     }
 
-    *i = functions[result].start - 1;
+    *i = functions[result].start;
     *block_end = functions[result].end;
     *in_function = true;
     *current_function = result;
@@ -275,7 +275,7 @@ static void HandleAssignment(Token *tokens, size_t tokens_count, size_t i, ssize
     {
       global_variable_index = GetGlobalVariable(I_PREVIOUS_TOKEN.value).variable_index;
 
-      if (in_function)
+      if (in_function && current_function != -1)
       {
         local_variable_index =
           GetLocalVariable(current_function, I_PREVIOUS_TOKEN.value).variable_index;
@@ -388,26 +388,63 @@ static void HandleLabel(Token *tokens, size_t i, size_t line_num)
   }
 }
 
-void *Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t current_function,
-                  size_t line_num)
+static void HandleReturn(Token *tokens, size_t tokens_count, size_t *i, ssize_t *original_pos,
+                         bool *in_function, ssize_t *current_function, ssize_t *block_end,
+                         Token *Return, size_t line_num)
 {
-  void *Return = NULL;
+  if (PTR_I_NEXT_TOKEN_1.type != TOKEN_EOL || PTR_I_NEXT_TOKEN_1.type != TOKEN_EOF)
+  {
+    ResultTokens return_tokens =
+      *GetTokensUntilX(TOKEN_EOL, &PTR_I_NEXT_TOKEN_1, tokens_count - (*i + 1), line_num);
 
-  InitGlobalVariables();
-  InitFunctions();
-  InitLabels();
+    Token result = ParseBinaryOperation(
+      return_tokens.result_tokens, return_tokens.result_tokens_count, *current_function, line_num);
+
+    if (result.type == TOKEN_NULL)
+    {
+      error(line_num, TYPE_INVALID, "Return value cannot be null.");
+    }
+    else
+    {
+      Return->value = result.value;
+      Return->type = result.type;
+      Return->precedence = result.precedence;
+
+      *i = *original_pos;
+
+      *original_pos = -1;
+      *in_function = false;
+      *current_function = -1;
+      *block_end = -1;
+    }
+  }
+  else
+  {
+    error(line_num, SYNTAX_INCOMPLETE_EXPRESSION, "Incomplete return at function.");
+  }
+}
+
+Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t current_function,
+                  size_t line_num, ssize_t block_end, ssize_t original_pos, size_t i,
+                  bool main_execution)
+{
+  Token Return;
+  Return.value = NULL;
+  Return.type = TOKEN_NULL;
+  Return.precedence = NO_PRECEDENCE;
+
+  if (main_execution)
+  {
+    InitGlobalVariables();
+    InitFunctions();
+    InitLabels();
+  }
 
   bool in_while = false;
   ResultTokens *while_comparison_tokens;
   ssize_t while_block_start = -1;
 
-  // End position of the current block being executed
-  ssize_t block_end = -1;
-
-  ssize_t original_pos = -1;  // Token to return to after executing a block.
-
-  size_t i;
-  for (i = 0; i < tokens_count; i++)
+  for (; i < tokens_count; i++)
   {
     if (I_CURRENT_TOKEN.type == TOKEN_EOF)
     {
@@ -492,6 +529,13 @@ void *Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
     if (I_CURRENT_TOKEN.type == TOKEN_COLON)
     {
       HandleLabel(tokens, i, line_num);
+    }
+
+    if (I_CURRENT_TOKEN.type == TOKEN_RETURN)
+    {
+      HandleReturn(tokens, tokens_count, &i, &original_pos, &in_function, &current_function,
+                   &block_end, &Return, line_num);
+      continue;
     }
 
     if (I_CURRENT_TOKEN.type == TOKEN_IMPORT)
@@ -871,9 +915,12 @@ void *Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
     }
   }
 
-  TerminateGlobalVariables();
-  TerminateFunctions();
-  TerminateLabels();
+  if (main_execution)
+  {
+    TerminateGlobalVariables();
+    TerminateFunctions();
+    TerminateLabels();
+  }
 
   return Return;
 }

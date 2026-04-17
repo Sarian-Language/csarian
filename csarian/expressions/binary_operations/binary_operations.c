@@ -5,15 +5,75 @@
 #include <string.h>
 
 #include "csarian/core/error_handling/error.h"
+#include "csarian/core/interpreter/interpreter.h"
 #include "csarian/definitions.h"
+#include "csarian/main.h"
+#include "csarian/runtime/functions/fn.h"
 #include "csarian/runtime/variables/global_variables/global_vars.h"
 #include "csarian/runtime/variables/local_variables/local_vars.h"
 #include "csarian/utils/debug/debug.h"
 #include "csarian/utils/token_utils/token_utils.h"
 
-#define OPERAND_A tokens[0]
-#define OPERATOR tokens[1]
-#define OPERAND_B tokens[2]
+static void ReturnInput(Token *tokens, ssize_t current_function, Token *result, size_t line_num)
+{
+  if (IS_VALID_BINARY_OPERAND(tokens[0].type))
+  {
+    if (tokens[0].type == TOKEN_IDENTIFIER)
+    {
+      GetGlobalVariableResult global_variable = GetGlobalVariable(tokens[0].value);
+
+      GetLocalVariableResult local_variable;
+      local_variable.variable_index = -1;  // Makes sure we don't read garbage.
+      if (current_function != -1)
+      {
+        local_variable = GetLocalVariable(current_function, tokens[0].value);
+      }
+
+      if (current_function != -1)
+      {
+        if (local_variable.variable_index != -1)
+        {
+          result->type = VariableTypeToTokenType(local_variable.variable_type);
+          result->value = local_variable.variable_value;
+          result->precedence = NO_PRECEDENCE;
+        }
+        else if (global_variable.variable_index != -1)
+        {
+          result->type = VariableTypeToTokenType(global_variable.variable_type);
+          result->value = global_variable.variable_value;
+          result->precedence = NO_PRECEDENCE;
+        }
+        else
+        {
+          error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
+        }
+      }
+      else
+      {
+        if (global_variable.variable_index != -1)
+        {
+          result->type = VariableTypeToTokenType(global_variable.variable_type);
+          result->value = global_variable.variable_value;
+          result->precedence = NO_PRECEDENCE;
+        }
+        else
+        {
+          error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
+        }
+      }
+    }
+    else
+    {
+      result->type = tokens[0].type;
+      result->value = tokens[0].value;
+      result->precedence = tokens[0].precedence;
+    }
+  }
+  else
+  {
+    error(line_num, SYNTAX_INCOMPLETE_EXPRESSION, "Incomplete binary operation.");
+  }
+}
 
 Token TranslateVariable(Token token, ssize_t current_function, size_t line_num)
 {
@@ -81,6 +141,10 @@ Token TranslateVariable(Token token, ssize_t current_function, size_t line_num)
 
   return token;
 }
+
+#define OPERAND_A tokens[0]
+#define OPERATOR tokens[1]
+#define OPERAND_B tokens[2]
 
 Token BinaryOperation(Token *tokens, ssize_t current_function, size_t line_num)
 {
@@ -274,70 +338,74 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_f
 
   Token operation[3];
 
-  // If there's no operation we return the input
-  if (tokens_count == 2)
+  // Translate function calls
+  for (size_t i = 0; i < tokens_count; i++)
   {
-    if (IS_VALID_BINARY_OPERAND(tokens[0].type))
+    if (I_CURRENT_TOKEN.type == TOKEN_IDENTIFIER && I_NEXT_TOKEN_1.type == TOKEN_LPARENT)
     {
-      if (tokens[0].type == TOKEN_IDENTIFIER)
-      {
-        GetGlobalVariableResult global_variable = GetGlobalVariable(tokens[0].value);
+      ssize_t index_result = SearchFunction(I_CURRENT_TOKEN.value);
 
-        GetLocalVariableResult local_variable;
-        local_variable.variable_index = -1;  // Makes sure we don't read garbage.
-        if (current_function != -1)
-        {
-          local_variable = GetLocalVariable(current_function, tokens[0].value);
-        }
-
-        if (current_function != -1)
-        {
-          if (local_variable.variable_index != -1)
-          {
-            result.type = VariableTypeToTokenType(local_variable.variable_type);
-            result.value = local_variable.variable_value;
-            result.precedence = NO_PRECEDENCE;
-          }
-          else if (global_variable.variable_index != -1)
-          {
-            result.type = VariableTypeToTokenType(global_variable.variable_type);
-            result.value = global_variable.variable_value;
-            result.precedence = NO_PRECEDENCE;
-          }
-          else
-          {
-            error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
-          }
-        }
-        else
-        {
-          if (global_variable.variable_index != -1)
-          {
-            result.type = VariableTypeToTokenType(global_variable.variable_type);
-            result.value = global_variable.variable_value;
-            result.precedence = NO_PRECEDENCE;
-          }
-          else
-          {
-            error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
-          }
-        }
-      }
-      else
+      if (index_result == -1)
       {
-        result.type = tokens[0].type;
-        result.value = tokens[0].value;
-        result.precedence = tokens[0].precedence;
+        error(line_num, IDENTIFIER_UNKNOWN, "Unknown function at binary operation.");
       }
-    }
-    else
-    {
-      error(line_num, SYNTAX_INCOMPLETE_EXPRESSION, "Incomplete binary operation.");
+
+      // Arguments
+      ResultTokens parent_tokens = *GetParentTokens(&I_NEXT_TOKEN_1, tokens_count, line_num);
+
+      ResultVariables *arguments = GetFunctionArguments(
+        parent_tokens.result_tokens, parent_tokens.result_tokens_count, current_function, line_num);
+
+      if (arguments->result_variables_count != functions[index_result].arguments)
+      {
+        if (arguments->result_variables_count > functions[index_result].arguments)
+          error(line_num, TYPE_INVALID_ARGUMENTS, "Expected less arguments for function call.");
+
+        if (arguments->result_variables_count < functions[index_result].arguments)
+          error(line_num, TYPE_INVALID_ARGUMENTS, "Expected more arguments for function call.");
+      }
+
+      for (size_t j = 0; j < functions[index_result].arguments; j++)
+      {
+        functions[index_result].function_variables[j].type = arguments->result_variables[j].type;
+        functions[index_result].function_variables[j].value = arguments->result_variables[j].value;
+      }
+
+      Token function_return =
+        Interpreter(main_tokens.result_tokens, main_tokens.result_tokens_count, true, index_result,
+                    line_num, functions[index_result].end, main_tokens.result_tokens_count - 1,
+                    functions[index_result].start + 1, false);
+
+      // Shift tokens
+      if (function_return.value == NULL)
+      {
+        error(line_num, TYPE_INVALID, "Function return is null.");
+      }
+
+      I_CURRENT_TOKEN.type = function_return.type;
+      I_CURRENT_TOKEN.value = function_return.value;
+      I_CURRENT_TOKEN.precedence = function_return.precedence;
+
+      size_t shift_start = i + 1;
+      size_t total_tokens_to_shift = parent_tokens.result_tokens_count + 1;
+
+      for (size_t j = shift_start; j + total_tokens_to_shift < tokens_count; j++)
+      {
+        tokens[j] = tokens[j + total_tokens_to_shift];
+      }
+
+      tokens_count -= total_tokens_to_shift;
     }
   }
 
-  ssize_t i;
-  for (i = 0; i < tokens_count; i++)
+  // If there's no operation we return the input
+  if (tokens_count == 2)
+  {
+    ReturnInput(tokens, current_function, &result, line_num);
+    return result;
+  }
+
+  for (size_t i = 0; i < tokens_count; i++)
   {
     if (IS_BINARY_OPERATOR(I_CURRENT_TOKEN.type))
     {

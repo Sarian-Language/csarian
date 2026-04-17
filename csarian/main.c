@@ -5,6 +5,9 @@
 #include "csarian/core/interpreter/interpreter.h"
 #include "csarian/core/lexer/lexer.h"
 #include "csarian/utils/token_utils/token_utils.h"
+#include "main.h"
+
+ResultTokens main_tokens;
 
 int main(int argc, char *argv[])
 {
@@ -57,8 +60,9 @@ int main(int argc, char *argv[])
   code[filesize] = '\0';
   fclose(file);
 
-  ResultTokens tokens = Lexer(code);
-  Interpreter(tokens.result_tokens, tokens.result_tokens_count, false, -1, 1);
+  main_tokens = Lexer(code);
+  Interpreter(main_tokens.result_tokens, main_tokens.result_tokens_count, false, -1, 1, -1, -1, 0,
+              true);
 
   free(code);
   return 0;

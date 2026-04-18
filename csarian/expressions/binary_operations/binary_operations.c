@@ -75,7 +75,7 @@ static void ReturnInput(Token *tokens, ssize_t current_function, Token *result, 
   }
 }
 
-Token TranslateVariable(Token token, ssize_t current_function, size_t line_num)
+static Token TranslateVariable(Token token, ssize_t current_function, size_t line_num)
 {
   GetGlobalVariableResult global_variable = GetGlobalVariable(token.value);
 
@@ -146,7 +146,7 @@ Token TranslateVariable(Token token, ssize_t current_function, size_t line_num)
 #define OPERATOR tokens[1]
 #define OPERAND_B tokens[2]
 
-Token BinaryOperation(Token *tokens, ssize_t current_function, size_t line_num)
+static Token BinaryOperation(Token *tokens, ssize_t current_function, size_t line_num)
 {
   Token result_token;
 

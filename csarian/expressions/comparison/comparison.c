@@ -10,7 +10,8 @@
 #include "csarian/utils/debug/debug.h"
 #include "csarian/utils/token_utils/token_utils.h"
 
-bool Comparison(Token *tokens, size_t tokens_count, ssize_t current_function, size_t line_num)
+static bool Comparison(Token *tokens, size_t tokens_count, ssize_t current_function,
+                       size_t line_num)
 {
   size_t i;
 

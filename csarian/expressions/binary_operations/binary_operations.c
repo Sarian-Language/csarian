@@ -14,6 +14,10 @@
 #include "csarian/utils/debug/debug.h"
 #include "csarian/utils/token_utils/token_utils.h"
 
+#define OPERAND_A tokens[0]
+#define OPERATOR tokens[1]
+#define OPERAND_B tokens[2]
+
 static void ReturnInput(Token *tokens, ssize_t current_function, Token *result, size_t line_num)
 {
   if (IS_VALID_BINARY_OPERAND(tokens[0].type))
@@ -207,10 +211,6 @@ static Token TranslateVariable(Token token, ssize_t current_function, size_t lin
 
 static Token BinaryOperation(Token *tokens, ssize_t current_function, size_t line_num)
 {
-#define OPERAND_A tokens[0]
-#define OPERATOR tokens[1]
-#define OPERAND_B tokens[2]
-
   Token result_token;
 
   // Translate variables

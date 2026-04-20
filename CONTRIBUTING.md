@@ -9,7 +9,7 @@ Before contributing, please read these guidelines carefully.
 1. **AI / Automated Code Usage**
 
    * Contributions generated with AI or automated tools **are not allowed**.
-   * You may use AI for assistance, but **you must not copy-paste AI-generated code**.
+   * You may use AI for assistance, but **you must not use AI-generated code**.
 
 2. **Commit Messages**
 

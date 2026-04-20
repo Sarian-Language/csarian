@@ -6,6 +6,7 @@
 #include "csarian/definitions.h"
 #include "csarian/runtime/variables/global_variables/global_vars.h"
 #include "csarian/runtime/variables/local_variables/local_vars.h"
+#include "csarian/utils/debug/debug.h"
 #include "csarian/utils/token_utils/token_utils.h"
 
 VariableType TokenTypeToVariableType(Token token, ssize_t current_function, size_t line_num)
@@ -109,7 +110,7 @@ ResultTokens *GetParentTokens(Token *tokens, size_t tokens_count, size_t line_nu
   {
     if (I_CURRENT_TOKEN.type == TOKEN_EOF)
     {
-      if (result->result_tokens_count > result_tokens_size)
+      if (result->result_tokens_count >= result_tokens_size)
       {
         size_t new_size = result_tokens_size + 1;
 

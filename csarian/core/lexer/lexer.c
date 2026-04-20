@@ -427,7 +427,7 @@ ResultTokens Lexer(char *code)
     }
   }
 
-  // PrintTokens(tokens, current_token); // DEBUG
+  // PrintTokens(tokens, current_token); // (Debug)
 
   result_tokens.result_tokens = tokens;
   result_tokens.result_tokens_count = current_token;

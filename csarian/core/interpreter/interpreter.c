@@ -66,7 +66,7 @@ static void IgnoreElseBlock(Token *tokens, size_t tokens_count, size_t *i, size_
   }
 }
 
-static void HandleFN(Token *tokens, size_t tokens_count, size_t *i, ssize_t current_function,
+static void HandleFn(Token *tokens, size_t tokens_count, size_t *i, ssize_t current_function,
                      size_t *line_num)
 {
   if (*i + 1 <= tokens_count && PTR_I_NEXT_TOKEN_1.type == TOKEN_IDENTIFIER)
@@ -263,22 +263,22 @@ static void HandleDebugPrint(Token *tokens, size_t tokens_count, size_t i, ssize
   }
 }
 
-static void HandleAssignment(Token *tokens, size_t tokens_count, size_t i, ssize_t current_function,
-                             bool in_function, size_t line_num)
+static void HandleAssignment(Token *tokens, size_t tokens_count, size_t *i,
+                             ssize_t current_function, bool in_function, size_t line_num)
 {
-  if (i - 1 >= 0 && i + 1 < tokens_count)  // Make sure we don't underflow/overflow
+  if (i - 1 >= 0 && *i + 1 < tokens_count)  // Make sure we don't underflow/overflow
   {
     ssize_t global_variable_index = -1;
     ssize_t local_variable_index = -1;
 
-    if (I_PREVIOUS_TOKEN.type == TOKEN_IDENTIFIER)
+    if (PTR_I_PREVIOUS_TOKEN.type == TOKEN_IDENTIFIER)
     {
-      global_variable_index = GetGlobalVariable(I_PREVIOUS_TOKEN.value).variable_index;
+      global_variable_index = GetGlobalVariable(PTR_I_PREVIOUS_TOKEN.value).variable_index;
 
       if (in_function && current_function != -1)
       {
         local_variable_index =
-          GetLocalVariable(current_function, I_PREVIOUS_TOKEN.value).variable_index;
+          GetLocalVariable(current_function, PTR_I_PREVIOUS_TOKEN.value).variable_index;
       }
     }
     else
@@ -287,7 +287,7 @@ static void HandleAssignment(Token *tokens, size_t tokens_count, size_t i, ssize
     if (in_function)
     {
       ResultTokens result_tokens =
-        *GetTokensUntilX(TOKEN_EOL, &I_NEXT_TOKEN_1, tokens_count - (i + 1), line_num);
+        *GetTokensUntilX(TOKEN_EOL, &PTR_I_NEXT_TOKEN_1, tokens_count - (*i + 1), line_num);
 
       if (local_variable_index != -1)
       {
@@ -318,7 +318,7 @@ static void HandleAssignment(Token *tokens, size_t tokens_count, size_t i, ssize
 
         if (variable_type != INVALID)
         {
-          CreateLocalVariable(current_function, I_PREVIOUS_TOKEN.value, variable_type,
+          CreateLocalVariable(current_function, PTR_I_PREVIOUS_TOKEN.value, variable_type,
                               binary_operation_result.value);
         }
         else
@@ -330,7 +330,7 @@ static void HandleAssignment(Token *tokens, size_t tokens_count, size_t i, ssize
     else
     {
       ResultTokens result_tokens =
-        *GetTokensUntilX(TOKEN_EOL, &I_NEXT_TOKEN_1, tokens_count - (i + 1), line_num);
+        *GetTokensUntilX(TOKEN_EOL, &PTR_I_NEXT_TOKEN_1, tokens_count - (*i + 1), line_num);
 
       if (global_variable_index != -1)
       {
@@ -360,7 +360,7 @@ static void HandleAssignment(Token *tokens, size_t tokens_count, size_t i, ssize
 
         if (variable_type != INVALID)
         {
-          CreateGlobalVariable(I_PREVIOUS_TOKEN.value, variable_type,
+          CreateGlobalVariable(PTR_I_PREVIOUS_TOKEN.value, variable_type,
                                binary_operation_result.value);
         }
         else
@@ -373,6 +373,16 @@ static void HandleAssignment(Token *tokens, size_t tokens_count, size_t i, ssize
   else
   {
     error(line_num, SYNTAX_INVALID, "Incomplete assignment (=).");
+  }
+
+  // Prevent functions from executing 2 times.
+  for (size_t j = *i; j < tokens_count; j++)
+  {
+    if (J_CURRENT_TOKEN.type == TOKEN_EOL)
+    {
+      *i = j - 1;
+      break;
+    }
   }
 }
 
@@ -392,36 +402,32 @@ static void HandleReturn(Token *tokens, size_t tokens_count, size_t *i, ssize_t 
                          bool *in_function, ssize_t *current_function, ssize_t *block_end,
                          Token *Return, size_t line_num)
 {
-  if (PTR_I_NEXT_TOKEN_1.type != TOKEN_EOL || PTR_I_NEXT_TOKEN_1.type != TOKEN_EOF)
-  {
-    ResultTokens return_tokens =
-      *GetTokensUntilX(TOKEN_EOL, &PTR_I_NEXT_TOKEN_1, tokens_count - (*i + 1), line_num);
-
-    Token result = ParseBinaryOperation(
-      return_tokens.result_tokens, return_tokens.result_tokens_count, *current_function, line_num);
-
-    if (result.type == TOKEN_NULL)
-    {
-      error(line_num, TYPE_INVALID, "Return value cannot be null.");
-    }
-    else
-    {
-      Return->value = result.value;
-      Return->type = result.type;
-      Return->precedence = result.precedence;
-
-      *i = *original_pos;
-
-      *original_pos = -1;
-      *in_function = false;
-      *current_function = -1;
-      *block_end = -1;
-    }
-  }
-  else
+  if (PTR_I_NEXT_TOKEN_1.type == TOKEN_EOL || PTR_I_NEXT_TOKEN_1.type == TOKEN_EOF)
   {
     error(line_num, SYNTAX_INCOMPLETE_EXPRESSION, "Incomplete return at function.");
   }
+
+  ResultTokens return_tokens =
+    *GetTokensUntilX(TOKEN_EOL, &PTR_I_NEXT_TOKEN_1, tokens_count - (*i + 1), line_num);
+
+  Token result = ParseBinaryOperation(
+    return_tokens.result_tokens, return_tokens.result_tokens_count, *current_function, line_num);
+
+  if (result.type == TOKEN_NULL)
+  {
+    error(line_num, TYPE_INVALID, "Return value cannot be null.");
+  }
+
+  Return->value = result.value;
+  Return->type = result.type;
+  Return->precedence = result.precedence;
+
+  *i = *original_pos;
+
+  *original_pos = -1;
+  *in_function = false;
+  *current_function = -1;
+  *block_end = -1;
 }
 
 Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t current_function,
@@ -446,6 +452,16 @@ Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
 
   for (; i < tokens_count; i++)
   {
+    // (Debug)
+    // if (main_execution)
+    // {
+    //   printf("\n[Main: i]: %ld",i);
+    // }
+    // else
+    // {
+    //   printf("\n[i]: %ld",i);
+    // }
+
     if (I_CURRENT_TOKEN.type == TOKEN_EOF)
     {
       break;
@@ -459,40 +475,33 @@ Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
       }
     }
 
-    if (in_function == true)
+    if (in_function == true && i > block_end)
     {
-      if (i != -1 && i > block_end)  // Check if we reached the end of the block
-      {
-        i = original_pos;
+      i = original_pos;
 
-        original_pos = -1;
-        in_function = false;
-        current_function = -1;
-        block_end = -1;
+      original_pos = -1;
+      in_function = false;
+      current_function = -1;
+      block_end = -1;
 
-        continue;
-      }
+      continue;
     }
 
-    if (in_while == true)
+    if (in_while == true && i > block_end)
     {
-      if (i > block_end)
+      if (ParseComparison(while_comparison_tokens->result_tokens,
+                          while_comparison_tokens->result_tokens_count, current_function, line_num))
       {
-        if (ParseComparison(while_comparison_tokens->result_tokens,
-                            while_comparison_tokens->result_tokens_count, current_function,
-                            line_num))
-        {
-          i = while_block_start;
-        }
-        else
-        {
-          i = block_end;
-          block_end = -1;
-          in_while = false;
-        }
-
-        continue;
+        i = while_block_start;
       }
+      else
+      {
+        i = block_end;
+        block_end = -1;
+        in_while = false;
+      }
+
+      continue;
     }
 
     // Ignores else blocks, as they are handled in the conditionals and would cause unwanted
@@ -505,7 +514,7 @@ Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
 
     if (I_CURRENT_TOKEN.type == TOKEN_FN)
     {
-      HandleFN(tokens, tokens_count, &i, current_function, &line_num);
+      HandleFn(tokens, tokens_count, &i, current_function, &line_num);
       continue;
     }
 
@@ -518,7 +527,7 @@ Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
 
     if (I_CURRENT_TOKEN.type == TOKEN_ASSIGNMENT)
     {
-      HandleAssignment(tokens, tokens_count, i, current_function, in_function, line_num);
+      HandleAssignment(tokens, tokens_count, &i, current_function, in_function, line_num);
     }
 
     if (I_CURRENT_TOKEN.type == TOKEN_DBG_PRINT)
@@ -540,89 +549,86 @@ Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
 
     if (I_CURRENT_TOKEN.type == TOKEN_IMPORT)
     {
-      if (I_CURRENT_TOKEN.type == TOKEN_IMPORT)
+      if (I_NEXT_TOKEN_1.type == TOKEN_STRING)
       {
-        if (I_NEXT_TOKEN_1.type == TOKEN_STRING)
+        FILE *file = fopen(I_NEXT_TOKEN_1.value, "rb");
+        if (!file)
         {
-          FILE *file = fopen(I_NEXT_TOKEN_1.value, "rb");
-          if (!file)
-          {
-            perror("[Main] Error opening import file");
-            exit(1);
-          }
-
-          if (fseek(file, 0, SEEK_END) != 0)
-          {
-            perror("[Main] Error seeking import file end");
-            fclose(file);
-            exit(1);
-          }
-
-          long filesize = ftell(file);
-          if (filesize < 0)
-          {
-            perror("[Interpreter] Error getting import file size");
-            fclose(file);
-            exit(1);
-          }
-          fseek(file, 0, SEEK_SET);
-
-          char *code = malloc((size_t)filesize + 1);
-          if (!code)
-          {
-            fclose(file);
-            error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() code.");
-          }
-
-          size_t bytes_read = fread(code, 1, (size_t)filesize, file);
-          if (bytes_read != (size_t)filesize)
-          {
-            perror("[Interpreter] Error reading file completely");
-            free(code);
-            fclose(file);
-            exit(1);
-          }
-
-          code[filesize] = '\0';
-          fclose(file);
-
-          ResultTokens import_tokens = Lexer(code);
-
-          size_t insert_pos = i;
-          size_t remove_count = 2;
-
-          // Determine how many tokens to insert (excluding TOKEN_EOF)
-          size_t tokens_to_insert = import_tokens.result_tokens_count;
-          if (tokens_to_insert > 0 &&
-              import_tokens.result_tokens[tokens_to_insert - 1].type == TOKEN_EOF)
-          {
-            tokens_to_insert--;
-          }
-
-          // Resize the tokens array
-          tokens_count = tokens_count - remove_count + tokens_to_insert;
-          tokens = realloc(tokens, sizeof(Token) * tokens_count);
-          if (!tokens)
-          {
-            free(code);
-            error(line_num, MEM_REALLOC_FAILED, "Failed to realloc tokens array");
-          }
-
-          // Move the subsequent tokens forward
-          memmove(&tokens[insert_pos + tokens_to_insert], &tokens[insert_pos + remove_count],
-                  sizeof(Token) * (tokens_count - insert_pos - tokens_to_insert));
-
-          // Copy imported tokens
-          for (size_t j = 0; j < tokens_to_insert; j++)
-          {
-            tokens[insert_pos + j] = import_tokens.result_tokens[j];
-          }
-
-          free(code);
-
-          i = insert_pos - 1;
-          continue;
+          perror("[Interpreter] Error opening import file");
+          exit(1);
         }
+
+        if (fseek(file, 0, SEEK_END) != 0)
+        {
+          perror("[Interpreter] Error seeking import file end");
+          fclose(file);
+          exit(1);
+        }
+
+        long filesize = ftell(file);
+        if (filesize < 0)
+        {
+          perror("[Interpreter] Error getting import file size");
+          fclose(file);
+          exit(1);
+        }
+        fseek(file, 0, SEEK_SET);
+
+        char *code = malloc((size_t)filesize + 1);
+        if (!code)
+        {
+          fclose(file);
+          error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() code.");
+        }
+
+        size_t bytes_read = fread(code, 1, (size_t)filesize, file);
+        if (bytes_read != (size_t)filesize)
+        {
+          perror("[Interpreter] Error reading file completely");
+          free(code);
+          fclose(file);
+          exit(1);
+        }
+
+        code[filesize] = '\0';
+        fclose(file);
+
+        ResultTokens import_tokens = Lexer(code);
+
+        size_t insert_pos = i;
+        size_t remove_count = 2;
+
+        // Determine how many tokens to insert (excluding TOKEN_EOF)
+        size_t tokens_to_insert = import_tokens.result_tokens_count;
+        if (tokens_to_insert > 0 &&
+            import_tokens.result_tokens[tokens_to_insert - 1].type == TOKEN_EOF)
+        {
+          tokens_to_insert--;
+        }
+
+        // Resize the tokens array
+        tokens_count = tokens_count - remove_count + tokens_to_insert;
+        tokens = realloc(tokens, sizeof(Token) * tokens_count);
+        if (!tokens)
+        {
+          free(code);
+          error(line_num, MEM_REALLOC_FAILED, "Failed to realloc tokens array");
+        }
+
+        // Move the subsequent tokens forward
+        memmove(&tokens[insert_pos + tokens_to_insert], &tokens[insert_pos + remove_count],
+                sizeof(Token) * (tokens_count - insert_pos - tokens_to_insert));
+
+        // Copy imported tokens
+        for (size_t j = 0; j < tokens_to_insert; j++)
+        {
+          tokens[insert_pos + j] = import_tokens.result_tokens[j];
+        }
+
+        free(code);
+
+        i = insert_pos - 1;
+        continue;
       }
     }
 

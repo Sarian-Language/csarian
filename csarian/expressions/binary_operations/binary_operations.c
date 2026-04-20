@@ -75,6 +75,69 @@ static void ReturnInput(Token *tokens, ssize_t current_function, Token *result, 
   }
 }
 
+static void TranslateFunctions(Token *tokens, size_t *tokens_count, ssize_t current_function,
+                               size_t line_num)
+{
+  for (size_t i = 0; i < *tokens_count; i++)
+  {
+    if (I_CURRENT_TOKEN.type == TOKEN_IDENTIFIER && I_NEXT_TOKEN_1.type == TOKEN_LPARENT)
+    {
+      ssize_t index_result = SearchFunction(I_CURRENT_TOKEN.value);
+
+      if (index_result == -1)
+      {
+        error(line_num, IDENTIFIER_UNKNOWN, "Unknown function at binary operation.");
+      }
+
+      // Arguments
+      ResultTokens parent_tokens = *GetParentTokens(&I_NEXT_TOKEN_1, *tokens_count, line_num);
+
+      ResultVariables *arguments = GetFunctionArguments(
+        parent_tokens.result_tokens, parent_tokens.result_tokens_count, current_function, line_num);
+
+      if (arguments->result_variables_count != functions[index_result].arguments)
+      {
+        if (arguments->result_variables_count > functions[index_result].arguments)
+          error(line_num, TYPE_INVALID_ARGUMENTS, "Expected less arguments for function call.");
+
+        if (arguments->result_variables_count < functions[index_result].arguments)
+          error(line_num, TYPE_INVALID_ARGUMENTS, "Expected more arguments for function call.");
+      }
+
+      for (size_t j = 0; j < functions[index_result].arguments; j++)
+      {
+        functions[index_result].function_variables[j].type = arguments->result_variables[j].type;
+        functions[index_result].function_variables[j].value = arguments->result_variables[j].value;
+      }
+
+      Token function_return =
+        Interpreter(main_tokens.result_tokens, main_tokens.result_tokens_count, true, index_result,
+                    line_num, functions[index_result].end, main_tokens.result_tokens_count - 1,
+                    functions[index_result].start + 1, false);
+
+      if (function_return.value == NULL)
+      {
+        error(line_num, TYPE_INVALID, "Function return is null.");
+      }
+
+      // Shift tokens
+      I_CURRENT_TOKEN.type = function_return.type;
+      I_CURRENT_TOKEN.value = function_return.value;
+      I_CURRENT_TOKEN.precedence = function_return.precedence;
+
+      size_t shift_start = i + 1;
+      size_t total_tokens_to_shift = parent_tokens.result_tokens_count + 1;
+
+      for (size_t j = shift_start; j + total_tokens_to_shift < *tokens_count; j++)
+      {
+        tokens[j] = tokens[j + total_tokens_to_shift];
+      }
+
+      *tokens_count -= total_tokens_to_shift;
+    }
+  }
+}
+
 static Token TranslateVariable(Token token, ssize_t current_function, size_t line_num)
 {
   GetGlobalVariableResult global_variable = GetGlobalVariable(token.value);
@@ -142,12 +205,12 @@ static Token TranslateVariable(Token token, ssize_t current_function, size_t lin
   return token;
 }
 
+static Token BinaryOperation(Token *tokens, ssize_t current_function, size_t line_num)
+{
 #define OPERAND_A tokens[0]
 #define OPERATOR tokens[1]
 #define OPERAND_B tokens[2]
 
-static Token BinaryOperation(Token *tokens, ssize_t current_function, size_t line_num)
-{
   Token result_token;
 
   // Translate variables
@@ -338,65 +401,7 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_f
 
   Token operation[3];
 
-  // Translate function calls
-  for (size_t i = 0; i < tokens_count; i++)
-  {
-    if (I_CURRENT_TOKEN.type == TOKEN_IDENTIFIER && I_NEXT_TOKEN_1.type == TOKEN_LPARENT)
-    {
-      ssize_t index_result = SearchFunction(I_CURRENT_TOKEN.value);
-
-      if (index_result == -1)
-      {
-        error(line_num, IDENTIFIER_UNKNOWN, "Unknown function at binary operation.");
-      }
-
-      // Arguments
-      ResultTokens parent_tokens = *GetParentTokens(&I_NEXT_TOKEN_1, tokens_count, line_num);
-
-      ResultVariables *arguments = GetFunctionArguments(
-        parent_tokens.result_tokens, parent_tokens.result_tokens_count, current_function, line_num);
-
-      if (arguments->result_variables_count != functions[index_result].arguments)
-      {
-        if (arguments->result_variables_count > functions[index_result].arguments)
-          error(line_num, TYPE_INVALID_ARGUMENTS, "Expected less arguments for function call.");
-
-        if (arguments->result_variables_count < functions[index_result].arguments)
-          error(line_num, TYPE_INVALID_ARGUMENTS, "Expected more arguments for function call.");
-      }
-
-      for (size_t j = 0; j < functions[index_result].arguments; j++)
-      {
-        functions[index_result].function_variables[j].type = arguments->result_variables[j].type;
-        functions[index_result].function_variables[j].value = arguments->result_variables[j].value;
-      }
-
-      Token function_return =
-        Interpreter(main_tokens.result_tokens, main_tokens.result_tokens_count, true, index_result,
-                    line_num, functions[index_result].end, main_tokens.result_tokens_count - 1,
-                    functions[index_result].start + 1, false);
-
-      // Shift tokens
-      if (function_return.value == NULL)
-      {
-        error(line_num, TYPE_INVALID, "Function return is null.");
-      }
-
-      I_CURRENT_TOKEN.type = function_return.type;
-      I_CURRENT_TOKEN.value = function_return.value;
-      I_CURRENT_TOKEN.precedence = function_return.precedence;
-
-      size_t shift_start = i + 1;
-      size_t total_tokens_to_shift = parent_tokens.result_tokens_count + 1;
-
-      for (size_t j = shift_start; j + total_tokens_to_shift < tokens_count; j++)
-      {
-        tokens[j] = tokens[j + total_tokens_to_shift];
-      }
-
-      tokens_count -= total_tokens_to_shift;
-    }
-  }
+  TranslateFunctions(tokens, &tokens_count, current_function, line_num);
 
   // If there's no operation we return the input
   if (tokens_count == 2)

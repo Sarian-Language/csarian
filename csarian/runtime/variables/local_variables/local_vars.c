@@ -46,6 +46,19 @@ void CreateLocalVariable(size_t function_index, char *key, VariableType type, ch
   functions[function_index].variables_count++;
 }
 
+void TerminateLocalVariables(ssize_t function_index)
+{
+  if (functions[function_index].variables_count > 0)
+  {
+    for (size_t i = functions[function_index].arguments; i < functions[function_index].variables_count; i++)
+    {
+      functions[function_index].function_variables[i].type = INVALID;
+      functions[function_index].function_variables[i].value = "NULL";
+      functions[function_index].variables_count--;
+    }
+  }
+}
+
 GetLocalVariableResult GetLocalVariable(ssize_t function_index, char *name)
 {
   GetLocalVariableResult result;

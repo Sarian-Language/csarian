@@ -402,6 +402,11 @@ static void HandleReturn(Token *tokens, size_t tokens_count, size_t *i, ssize_t 
                          bool *in_function, ssize_t *current_function, ssize_t *block_end,
                          Token *Return, size_t line_num)
 {
+  if (!in_function)
+  {
+    error(line_num, SYNTAX_INVALID, "Cannot use return outside of functions.");
+  }
+
   if (PTR_I_NEXT_TOKEN_1.type == TOKEN_EOL || PTR_I_NEXT_TOKEN_1.type == TOKEN_EOF)
   {
     error(line_num, SYNTAX_INCOMPLETE_EXPRESSION, "Incomplete return at function.");
@@ -421,6 +426,8 @@ static void HandleReturn(Token *tokens, size_t tokens_count, size_t *i, ssize_t 
   Return->value = result.value;
   Return->type = result.type;
   Return->precedence = result.precedence;
+
+  TerminateLocalVariables(*current_function);
 
   *i = *original_pos;
 
@@ -477,6 +484,8 @@ Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
 
     if (in_function == true && i > block_end)
     {
+      TerminateLocalVariables(current_function);
+
       i = original_pos;
 
       original_pos = -1;

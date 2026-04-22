@@ -50,7 +50,8 @@ void TerminateLocalVariables(ssize_t function_index)
 {
   if (functions[function_index].variables_count > 0)
   {
-    for (size_t i = functions[function_index].arguments; i < functions[function_index].variables_count; i++)
+    for (size_t i = functions[function_index].arguments;
+         i < functions[function_index].variables_count; i++)
     {
       functions[function_index].function_variables[i].type = INVALID;
       functions[function_index].function_variables[i].value = "NULL";

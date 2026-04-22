@@ -15,6 +15,7 @@ build_linux:
 	$(SRC_DIR)/utils/token_utils/token_utils.c \
 	$(SRC_DIR)/runtime/labels/label.c \
 	$(SRC_DIR)/runtime/variables/local_variables/local_vars.c \
+	$(SRC_DIR)/core/interpreter/import/import.c \
 	-lm
 
 	@echo "Build Finished."

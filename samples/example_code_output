@@ -1,0 +1,17 @@
+Expected output from example_code.sar
+
+---
+
+=== Sarian Language ===
+10
+20
+30
+Hello, Sarian
+Area of circle: 
+78.500000
+New x: 
+15
+Hello from function!
+Sum inside function: 
+35
+The sum result is 35/30

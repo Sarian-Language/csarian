@@ -20,62 +20,62 @@
 
 static void ReturnInput(Token *tokens, ssize_t current_function, Token *result, size_t line_num)
 {
-  if (IS_VALID_BINARY_OPERAND(tokens[0].type))
+  if (!IS_VALID_BINARY_OPERAND(tokens[0].type))
   {
-    if (tokens[0].type == TOKEN_IDENTIFIER)
+    error(line_num, SYNTAX_INCOMPLETE_EXPRESSION, "Incomplete binary operation.");
+  }
+
+  if (tokens[0].type == TOKEN_IDENTIFIER)
+  {
+    GetGlobalVariableResult global_variable = GetGlobalVariable(tokens[0].value);
+
+    GetLocalVariableResult local_variable;
+    local_variable.variable_index = -1;  // Makes sure we don't read garbage.
+    if (current_function != -1)
     {
-      GetGlobalVariableResult global_variable = GetGlobalVariable(tokens[0].value);
+      local_variable = GetLocalVariable(current_function, tokens[0].value);
+    }
 
-      GetLocalVariableResult local_variable;
-      local_variable.variable_index = -1;  // Makes sure we don't read garbage.
-      if (current_function != -1)
+    if (current_function != -1)
+    {
+      if (local_variable.variable_index != -1)
       {
-        local_variable = GetLocalVariable(current_function, tokens[0].value);
+        result->type = VariableTypeToTokenType(local_variable.variable_type);
+        result->value = local_variable.variable_value;
+        result->precedence = NO_PRECEDENCE;
       }
-
-      if (current_function != -1)
+      else if (global_variable.variable_index != -1)
       {
-        if (local_variable.variable_index != -1)
-        {
-          result->type = VariableTypeToTokenType(local_variable.variable_type);
-          result->value = local_variable.variable_value;
-          result->precedence = NO_PRECEDENCE;
-        }
-        else if (global_variable.variable_index != -1)
-        {
-          result->type = VariableTypeToTokenType(global_variable.variable_type);
-          result->value = global_variable.variable_value;
-          result->precedence = NO_PRECEDENCE;
-        }
-        else
-        {
-          error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
-        }
+        result->type = VariableTypeToTokenType(global_variable.variable_type);
+        result->value = global_variable.variable_value;
+        result->precedence = NO_PRECEDENCE;
       }
       else
       {
-        if (global_variable.variable_index != -1)
-        {
-          result->type = VariableTypeToTokenType(global_variable.variable_type);
-          result->value = global_variable.variable_value;
-          result->precedence = NO_PRECEDENCE;
-        }
-        else
-        {
-          error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
-        }
+        error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
       }
     }
+
     else
     {
-      result->type = tokens[0].type;
-      result->value = tokens[0].value;
-      result->precedence = tokens[0].precedence;
+      if (global_variable.variable_index != -1)
+      {
+        result->type = VariableTypeToTokenType(global_variable.variable_type);
+        result->value = global_variable.variable_value;
+        result->precedence = NO_PRECEDENCE;
+      }
+      else
+      {
+        error(line_num, IDENTIFIER_UNKNOWN, "Unknown identifier.");
+      }
     }
   }
+
   else
   {
-    error(line_num, SYNTAX_INCOMPLETE_EXPRESSION, "Incomplete binary operation.");
+    result->type = tokens[0].type;
+    result->value = tokens[0].value;
+    result->precedence = tokens[0].precedence;
   }
 }
 
@@ -153,33 +153,25 @@ static Token TranslateVariable(Token token, ssize_t current_function, size_t lin
     local_variable = GetLocalVariable(current_function, token.value);
   }
 
+  VariableType variable_type = TokenTypeToVariableType(token, current_function, line_num);
+  if (variable_type == INVALID)
+    error(line_num, SYNTAX_INVALID, "Cannot perform binary operation between operand type(s).");
+
+  TokenType token_type = VariableTypeToTokenType(variable_type);
+  if (token_type == TOKEN_NULL)
+    error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
+
+  token.type = token_type;
+
   if (current_function != -1)
   {
     if (local_variable.variable_index != -1)
     {
-      VariableType variable_type = TokenTypeToVariableType(token, current_function, line_num);
-      if (variable_type == INVALID)
-        error(line_num, SYNTAX_INVALID, "Cannot perform binary operation between operand type(s).");
-
-      TokenType token_type = VariableTypeToTokenType(variable_type);
-      if (token_type == TOKEN_NULL)
-        error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
-
-      token.type = token_type;
       token.value = (char *)local_variable.variable_value;
     }
 
     else if (global_variable.variable_index != -1)
     {
-      VariableType variable_type = TokenTypeToVariableType(token, current_function, line_num);
-      if (variable_type == INVALID)
-        error(line_num, SYNTAX_INVALID, "Cannot perform binary operation between operand type(s).");
-
-      TokenType token_type = VariableTypeToTokenType(variable_type);
-      if (token_type == TOKEN_NULL)
-        error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
-
-      token.type = token_type;
       token.value = (char *)global_variable.variable_value;
     }
 
@@ -191,15 +183,6 @@ static Token TranslateVariable(Token token, ssize_t current_function, size_t lin
   {
     if (global_variable.variable_index != -1)
     {
-      VariableType variable_type = TokenTypeToVariableType(token, current_function, line_num);
-      if (variable_type == INVALID)
-        error(line_num, SYNTAX_INVALID, "Cannot perform binary operation between operand type(s).");
-
-      TokenType token_type = VariableTypeToTokenType(variable_type);
-      if (token_type == TOKEN_NULL)
-        error(line_num, TYPE_INVALID, "NULL_TOKEN from 'variable_type_to_token_type'.");
-
-      token.type = token_type;
       token.value = (char *)global_variable.variable_value;
     }
     else
@@ -230,75 +213,70 @@ static Token BinaryOperation(Token *tokens, ssize_t current_function, size_t lin
   // String operations
   if (OPERAND_A.type == TOKEN_STRING || OPERAND_B.type == TOKEN_STRING)
   {
-    if (OPERAND_A.type == TOKEN_STRING && OPERAND_B.type == TOKEN_STRING ||
-        OPERAND_B.type == TOKEN_INT_LITERAL)
-    {
-      if (OPERATOR.type == TOKEN_PLUS)
-      {
-        if (OPERAND_A.type == TOKEN_STRING && OPERAND_B.type == TOKEN_STRING)
-        {
-          char *string1 = OPERAND_A.value;
-          char *string2 = OPERAND_B.value;
-
-          char *result = malloc(strlen(string1) + strlen(string2) + 1);
-          if (!result)
-            error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() result.");
-
-          result[0] = '\0';
-
-          strcat(result, string1);
-          strcat(result, string2);
-
-          result_token.type = TOKEN_STRING;
-          result_token.value = result;
-          result_token.precedence = NO_PRECEDENCE;
-
-          return result_token;
-        }
-        else
-        {
-          error(line_num, TYPE_INVALID, "Can only concatenate string to string.");
-        }
-      }
-
-      else if (OPERATOR.type == TOKEN_ASTERISK)
-      {
-        if (OPERAND_B.type == TOKEN_INT_LITERAL)
-        {
-          unsigned int multiply_times = atoi(OPERAND_B.value);
-
-          char *string1 = malloc(strlen(OPERAND_A.value) * multiply_times + 1);
-          if (!string1)
-            error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() string1.");
-
-          string1[0] = '\0';
-
-          char *string1_tmp = OPERAND_A.value;
-
-          for (size_t i = 0; i < multiply_times; i++)
-          {
-            strcat(string1, string1_tmp);
-          }
-
-          result_token.type = TOKEN_STRING;
-          result_token.value = string1;
-          result_token.precedence = NO_PRECEDENCE;
-
-          return result_token;
-        }
-        else
-        {
-          error(line_num, TYPE_INVALID, "Expected integer for string multiplication.");
-        }
-      }
-      else
-      {
-        error(line_num, TYPE_INVALID, "Can only use '+' and '*' for string tokens.");
-      }
-    }
-    else
+    if (!(OPERAND_A.type == TOKEN_STRING && OPERAND_B.type == TOKEN_STRING ||
+          OPERAND_B.type == TOKEN_INT_LITERAL))
     {
       error(line_num, TYPE_INVALID, "Operator not allowed between operand type(s).");
+    }
+
+    if (OPERATOR.type == TOKEN_PLUS)
+    {
+      if (OPERAND_A.type != TOKEN_STRING || OPERAND_B.type != TOKEN_STRING)
+      {
+        error(line_num, TYPE_INVALID, "Can only concatenate string to string.");
+      }
+
+      char *string1 = OPERAND_A.value;
+      char *string2 = OPERAND_B.value;
+
+      char *result = malloc(strlen(string1) + strlen(string2) + 1);
+      if (!result)
+        error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() result.");
+
+      result[0] = '\0';
+
+      strcat(result, string1);
+      strcat(result, string2);
+
+      result_token.type = TOKEN_STRING;
+      result_token.value = result;
+      result_token.precedence = NO_PRECEDENCE;
+
+      return result_token;
+    }
+
+    else if (OPERATOR.type == TOKEN_ASTERISK)
+    {
+      if (OPERAND_B.type != TOKEN_INT_LITERAL)
+      {
+        error(line_num, TYPE_INVALID, "Expected integer for string multiplication.");
+      }
+
+      unsigned int multiply_times = atoi(OPERAND_B.value);
+
+      char *string1 = malloc(strlen(OPERAND_A.value) * multiply_times + 1);
+      if (!string1)
+        error(line_num, MEM_MALLOC_FAILED, "Failed to malloc() string1.");
+
+      string1[0] = '\0';
+
+      char *string1_tmp = OPERAND_A.value;
+
+      for (size_t i = 0; i < multiply_times; i++)
+      {
+        strcat(string1, string1_tmp);
+      }
+
+      result_token.type = TOKEN_STRING;
+      result_token.value = string1;
+      result_token.precedence = NO_PRECEDENCE;
+
+      return result_token;
+    }
+
+    else
+    {
+      error(line_num, TYPE_INVALID, "Can only use '+' and '*' for string tokens.");
     }
   }
 
@@ -414,64 +392,63 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_f
   {
     if (IS_BINARY_OPERATOR(I_CURRENT_TOKEN.type))
     {
-      if (i - 1 >= 0 && i + 1 <= tokens_count && IS_VALID_BINARY_OPERAND(I_PREVIOUS_TOKEN.type) &&
-          IS_VALID_BINARY_OPERAND(I_NEXT_TOKEN_1.type))
-      {
-        // Next operation has more precedence.
-        if (I_NEXT_TOKEN_2.precedence > I_CURRENT_TOKEN.precedence)
-        {
-          operation[0] = I_NEXT_TOKEN_1;
-          operation[1] = I_NEXT_TOKEN_2;
-          operation[2] = I_NEXT_TOKEN_3;
-
-          result = BinaryOperation(operation, current_function, line_num);
-          I_NEXT_TOKEN_1.type = result.type;
-          I_NEXT_TOKEN_1.value = result.value;
-          I_NEXT_TOKEN_1.precedence = result.precedence;
-
-          // Shift tokens
-          size_t shift_start = i + 2;
-          size_t total_tokens_to_shift = 2;
-
-          for (size_t j = shift_start; j + total_tokens_to_shift < tokens_count; j++)
-          {
-            tokens[j] = tokens[j + total_tokens_to_shift];
-          }
-
-          tokens_count -= total_tokens_to_shift;
-
-          i -= total_tokens_to_shift;
-        }
-
-        // Next operation has no precedence.
-        else
-        {
-          operation[0] = I_PREVIOUS_TOKEN;
-          operation[1] = I_CURRENT_TOKEN;
-          operation[2] = I_NEXT_TOKEN_1;
-
-          result = BinaryOperation(operation, current_function, line_num);
-          I_PREVIOUS_TOKEN.type = result.type;
-          I_PREVIOUS_TOKEN.value = result.value;
-          I_PREVIOUS_TOKEN.precedence = result.precedence;
-
-          // Shift tokens
-          size_t shift_start = i;
-          size_t total_tokens_to_shift = 2;
-
-          for (size_t j = shift_start; j + total_tokens_to_shift < tokens_count; j++)
-          {
-            tokens[j] = tokens[j + total_tokens_to_shift];
-          }
-
-          tokens_count -= total_tokens_to_shift;
-
-          i -= total_tokens_to_shift;
-        }
-      }
-      else
+      if (i == 0 || I_NEXT_TOKEN_1.type == TOKEN_EOF ||
+          !IS_VALID_BINARY_OPERAND(I_PREVIOUS_TOKEN.type) ||
+          !IS_VALID_BINARY_OPERAND(I_NEXT_TOKEN_1.type))
       {
         error(line_num, TYPE_INVALID_OPERANDS, "Invalid operation operands.");
+      }
+
+      // Next operation has more precedence.
+      if (I_NEXT_TOKEN_2.precedence > I_CURRENT_TOKEN.precedence)
+      {
+        operation[0] = I_NEXT_TOKEN_1;
+        operation[1] = I_NEXT_TOKEN_2;
+        operation[2] = I_NEXT_TOKEN_3;
+
+        result = BinaryOperation(operation, current_function, line_num);
+        I_NEXT_TOKEN_1.type = result.type;
+        I_NEXT_TOKEN_1.value = result.value;
+        I_NEXT_TOKEN_1.precedence = result.precedence;
+
+        // Shift tokens
+        size_t shift_start = i + 2;
+        size_t total_tokens_to_shift = 2;
+
+        for (size_t j = shift_start; j + total_tokens_to_shift < tokens_count; j++)
+        {
+          tokens[j] = tokens[j + total_tokens_to_shift];
+        }
+
+        tokens_count -= total_tokens_to_shift;
+
+        i -= total_tokens_to_shift;
+      }
+
+      // Next operation has no precedence.
+      else
+      {
+        operation[0] = I_PREVIOUS_TOKEN;
+        operation[1] = I_CURRENT_TOKEN;
+        operation[2] = I_NEXT_TOKEN_1;
+
+        result = BinaryOperation(operation, current_function, line_num);
+        I_PREVIOUS_TOKEN.type = result.type;
+        I_PREVIOUS_TOKEN.value = result.value;
+        I_PREVIOUS_TOKEN.precedence = result.precedence;
+
+        // Shift tokens
+        size_t shift_start = i;
+        size_t total_tokens_to_shift = 2;
+
+        for (size_t j = shift_start; j + total_tokens_to_shift < tokens_count; j++)
+        {
+          tokens[j] = tokens[j + total_tokens_to_shift];
+        }
+
+        tokens_count -= total_tokens_to_shift;
+
+        i -= total_tokens_to_shift;
       }
     }
   }

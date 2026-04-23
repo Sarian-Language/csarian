@@ -20,7 +20,7 @@ static bool Comparison(Token *tokens, size_t tokens_count, ssize_t current_funct
     if (IS_COMPARISON_TOKEN(I_CURRENT_TOKEN.type))
     {
       // Parse left binary operation.
-      size_t left_operation_tokens_count = (i + 1);  // i+1 so we can have the TOKEN_EOF.
+      size_t left_operation_tokens_count = (i + 1);
 
       // Copy the content of tokens to left_operation_tokens.
       Token *left_operation_tokens = malloc(sizeof(Token) * left_operation_tokens_count);
@@ -49,30 +49,25 @@ static bool Comparison(Token *tokens, size_t tokens_count, ssize_t current_funct
 
       if (left_result.type == TOKEN_STRING || right_result.type == TOKEN_STRING)
       {
-        if (left_result.type == TOKEN_STRING && right_result.type == TOKEN_STRING)
+        if (left_result.type != TOKEN_STRING || right_result.type != TOKEN_STRING)
         {
-          if (I_CURRENT_TOKEN.type == TOKEN_EQUAL || I_CURRENT_TOKEN.type == TOKEN_NOT_EQUAL)
-          {
-            if (strcmp(left_result.value, right_result.value) == 0)
-            {
-              right = 0;
-              left = 0;
-            }
-            else
-            {
-              right = 1;
-              left = 0;
-            }
-          }
-          else
-          {
-            error(line_num, TYPE_INVALID_OPERATOR,
-                  "Only '==' and '!=' comparison operators are allowed in string comparisons.");
-          }
+          error(line_num, TYPE_INVALID, "Can only compare string to string.");
+        }
+
+        if (I_CURRENT_TOKEN.type != TOKEN_EQUAL && I_CURRENT_TOKEN.type != TOKEN_NOT_EQUAL)
+        {
+          error(line_num, TYPE_INVALID_OPERATOR, "Only '==' and '!=' comparison operators are allowed in string comparisons.");
+        }
+
+        if (strcmp(left_result.value, right_result.value) == 0)
+        {
+          right = 0;
+          left = 0;
         }
         else
         {
-          error(line_num, TYPE_INVALID, "Can only compare string to string.");
+          right = 1;
+          left = 0;
         }
       }
 

@@ -18,6 +18,7 @@
 #include "csarian/utils/token_utils/token_utils.h"
 
 #include "import/import.h"
+#include "loops/while/while.h"
 
 static void IgnoreElseBlock(Token *tokens, size_t tokens_count, size_t *i, size_t *line_num)
 {
@@ -396,11 +397,8 @@ Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
     InitGlobalVariables();
     InitFunctions();
     InitLabels();
+    InitWhileLoops();
   }
-
-  bool in_while = false;
-  ResultTokens *while_comparison_tokens;
-  ssize_t while_block_start = -1;
 
   for (; i < tokens_count; i++)
   {
@@ -441,18 +439,19 @@ Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
       continue;
     }
 
-    if (in_while == true && i > block_end)
+    if (while_loops_count > 0 && i >= while_loops[while_loops_count - 1].while_block_end)
     {
-      if (ParseComparison(while_comparison_tokens->result_tokens,
-                          while_comparison_tokens->result_tokens_count, current_function, line_num))
+      if (ParseComparison(
+            while_loops[while_loops_count - 1].while_comparison_tokens.result_tokens,
+            while_loops[while_loops_count - 1].while_comparison_tokens.result_tokens_count,
+            current_function, line_num))
       {
-        i = while_block_start;
+        i = while_loops[while_loops_count - 1].while_block_start;
       }
       else
       {
-        i = block_end;
-        block_end = -1;
-        in_while = false;
+        i = while_loops[while_loops_count - 1].while_block_end;
+        while_loops_count--;
       }
 
       continue;
@@ -626,7 +625,11 @@ Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
         error(line_num, SYNTAX_INVALID, "Expected '(' after while statement.");
       }
 
-      while_comparison_tokens = GetParentTokens(&tokens[i + 1], tokens_count - (i + 1), line_num);
+      ssize_t while_block_start;
+      ssize_t while_block_end;
+
+      ResultTokens *while_comparison_tokens =
+        GetParentTokens(&tokens[i + 1], tokens_count - (i + 1), line_num);
 
       bool result =
         ParseComparison(while_comparison_tokens->result_tokens,
@@ -635,9 +638,9 @@ Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
       if (result)
       {
         while_block_start = -1;
+        while_block_end = -1;
 
         size_t depth = 0;
-        ssize_t while_block_end = -1;
         bool found_block = false;
 
         for (size_t j = i + 1 + while_comparison_tokens->result_tokens_count + 1; j < tokens_count;
@@ -674,26 +677,23 @@ Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
           error(line_num, SYNTAX_INVALID, "Expected '{' at while loop.");
         }
 
-        i = while_block_start;
-
-        if (while_block_end != -1)
-        {
-          block_end = while_block_end;
-        }
-        else
+        if (while_block_end == -1)
         {
           error(line_num, SYNTAX_INCOMPLETE_BRACE, "Incomplete braces at while block.");
         }
 
-        in_while = true;
+        AddWhileLoop(while_block_start, while_block_end, while_comparison_tokens->result_tokens,
+                     while_comparison_tokens->result_tokens_count);
+        i = while_block_start;
+
         continue;
       }
 
       else
       {
         size_t depth = 0;
-        ssize_t while_block_end = -1;
         bool found_block = false;
+        while_block_end = -1;
 
         for (size_t j = i + 1 + while_comparison_tokens->result_tokens_count + 1; j < tokens_count;
              j++)

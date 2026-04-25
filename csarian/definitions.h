@@ -101,12 +101,28 @@ typedef struct
   size_t end;
 } Function;
 
+// ResultTokens struct
+typedef struct
+{
+  size_t result_tokens_count;
+  Token *result_tokens;
+} ResultTokens;
+
 // Labels (goto)
 typedef struct
 {
   char *key;
   size_t start;
 } Label;
+
+// While struct
+typedef struct
+{
+  ResultTokens while_comparison_tokens;
+
+  ssize_t while_block_start;
+  ssize_t while_block_end;
+} While;
 
 // Macros
 #define INT_TO_STR_SIZE 12

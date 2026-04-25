@@ -56,7 +56,8 @@ static bool Comparison(Token *tokens, size_t tokens_count, ssize_t current_funct
 
         if (I_CURRENT_TOKEN.type != TOKEN_EQUAL && I_CURRENT_TOKEN.type != TOKEN_NOT_EQUAL)
         {
-          error(line_num, TYPE_INVALID_OPERATOR, "Only '==' and '!=' comparison operators are allowed in string comparisons.");
+          error(line_num, TYPE_INVALID_OPERATOR,
+                "Only '==' and '!=' comparison operators are allowed in string comparisons.");
         }
 
         if (strcmp(left_result.value, right_result.value) == 0)

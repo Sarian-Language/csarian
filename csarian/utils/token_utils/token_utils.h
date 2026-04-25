@@ -4,12 +4,6 @@
 
 #include "csarian/definitions.h"
 
-typedef struct
-{
-  size_t result_tokens_count;
-  Token *result_tokens;
-} ResultTokens;
-
 VariableType TokenTypeToVariableType(Token token, ssize_t current_function, size_t line_num);
 
 TokenType VariableTypeToTokenType(VariableType type);

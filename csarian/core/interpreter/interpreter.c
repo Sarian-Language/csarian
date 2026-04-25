@@ -786,6 +786,7 @@ Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
     TerminateGlobalVariables();
     TerminateFunctions();
     TerminateLabels();
+    TerminateWhileLoops();
   }
 
   return Return;

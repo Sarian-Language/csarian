@@ -21,6 +21,12 @@ void InitWhileLoops()
   while_loops = calloc(while_loops_size, sizeof(While) * while_loops_size);
 }
 
+void TerminateWhileLoops()
+{
+  free(while_loops);
+  while_loops = NULL;
+}
+
 void AddWhileLoop(size_t while_start, size_t while_end, Token *comparison_tokens,
                   size_t comparison_tokens_count)
 {

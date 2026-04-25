@@ -769,15 +769,13 @@ Token Interpreter(Token *tokens, size_t tokens_count, bool in_function, ssize_t 
 
       ssize_t label_index = GetLabel(I_NEXT_TOKEN_1.value);
 
-      if (label_index != -1)
-      {
-        i = labels[label_index].start;
-        continue;
-      }
-      else
+      if (label_index == -1)
       {
         error(line_num, SYNTAX_INVALID, "Unknown 'goto' label.");
       }
+
+      i = labels[label_index].start;
+      continue;
     }
   }
 

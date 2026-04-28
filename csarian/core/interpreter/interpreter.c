@@ -241,8 +241,8 @@ static void HandleDebugPrint(Token *tokens, size_t tokens_count, size_t i, ssize
 {
   ResultTokens print_tokens = *GetParentTokens(&tokens[i], tokens_count, line_num);
 
-  Token result_token = ParseBinaryOperation(
-    print_tokens.result_tokens, print_tokens.result_tokens_count, current_function, line_num);
+  Token result_token = BinaryOperation(print_tokens.result_tokens, print_tokens.result_tokens_count,
+                                       current_function, line_num);
 
   if (result_token.type != TOKEN_NULL)
   {
@@ -281,7 +281,7 @@ static void HandleAssignment(Token *tokens, size_t tokens_count, size_t *i,
   ResultTokens result_tokens =
     *GetTokensUntilX(TOKEN_EOL, &PTR_I_NEXT_TOKEN_1, tokens_count - (*i + 1), line_num);
 
-  Token binary_operation_result = ParseBinaryOperation(
+  Token binary_operation_result = BinaryOperation(
     result_tokens.result_tokens, result_tokens.result_tokens_count, current_function, line_num);
 
   VariableType variable_type =
@@ -361,8 +361,8 @@ static void HandleReturn(Token *tokens, size_t tokens_count, size_t *i, ssize_t 
   ResultTokens return_tokens =
     *GetTokensUntilX(TOKEN_EOL, &PTR_I_NEXT_TOKEN_1, tokens_count - (*i + 1), line_num);
 
-  Token result = ParseBinaryOperation(
-    return_tokens.result_tokens, return_tokens.result_tokens_count, *current_function, line_num);
+  Token result = BinaryOperation(return_tokens.result_tokens, return_tokens.result_tokens_count,
+                                 *current_function, line_num);
 
   if (result.type == TOKEN_NULL)
   {

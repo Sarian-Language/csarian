@@ -31,17 +31,17 @@ static bool Comparison(Token *tokens, size_t tokens_count, ssize_t current_funct
       left_operation_tokens[i].value = NULL;
       left_operation_tokens[i].precedence = NO_PRECEDENCE;
 
-      Token left_result = ParseBinaryOperation(left_operation_tokens, left_operation_tokens_count,
-                                               current_function, line_num);
+      Token left_result = BinaryOperation(left_operation_tokens, left_operation_tokens_count,
+                                          current_function, line_num);
 
       // Parse right binary operation.
       size_t right_operation_tokens_count = tokens_count - (i + 1);
       ResultTokens *right_operation_tokens =
         GetTokensUntilX(TOKEN_EOF, &tokens[i + 1], tokens_count - 1, line_num);
 
-      Token right_result = ParseBinaryOperation(right_operation_tokens->result_tokens,
-                                                right_operation_tokens->result_tokens_count,
-                                                current_function, line_num);
+      Token right_result =
+        BinaryOperation(right_operation_tokens->result_tokens,
+                        right_operation_tokens->result_tokens_count, current_function, line_num);
 
       // Convert results
       double right;

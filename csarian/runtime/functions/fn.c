@@ -86,8 +86,8 @@ ResultVariables *GetFunctionArguments(Token *tokens, size_t tokens_count, ssize_
         ResultTokens argument_tokens =
           *GetTokensUntilX(TOKEN_COMMA, &tokens[last_pos], tokens_count - last_pos, line_num);
         Token argument_result =
-          ParseBinaryOperation(argument_tokens.result_tokens, argument_tokens.result_tokens_count,
-                               current_function, line_num);
+          BinaryOperation(argument_tokens.result_tokens, argument_tokens.result_tokens_count,
+                          current_function, line_num);
 
         last_pos = i + 1;
 

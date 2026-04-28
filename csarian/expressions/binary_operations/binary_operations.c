@@ -192,7 +192,7 @@ static Token TranslateVariable(Token token, ssize_t current_function, size_t lin
   return token;
 }
 
-static Token BinaryOperation(Token *tokens, ssize_t current_function, size_t line_num)
+static Token Operation(Token *tokens, ssize_t current_function, size_t line_num)
 {
   Token result_token;
 
@@ -369,8 +369,8 @@ static Token BinaryOperation(Token *tokens, ssize_t current_function, size_t lin
   return result_token;
 }
 
-Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_function,
-                           size_t line_num)
+static Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_function,
+                                  size_t line_num)
 {
   Token result;
   result.type = TOKEN_NULL;
@@ -378,8 +378,6 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_f
   result.precedence = NO_PRECEDENCE;
 
   Token operation[3];
-
-  TranslateFunctions(tokens, &tokens_count, current_function, line_num);
 
   // If there's no operation we return the input
   if (tokens_count == 2)
@@ -406,7 +404,7 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_f
         operation[1] = I_NEXT_TOKEN_2;
         operation[2] = I_NEXT_TOKEN_3;
 
-        result = BinaryOperation(operation, current_function, line_num);
+        result = Operation(operation, current_function, line_num);
         I_NEXT_TOKEN_1.type = result.type;
         I_NEXT_TOKEN_1.value = result.value;
         I_NEXT_TOKEN_1.precedence = result.precedence;
@@ -432,7 +430,7 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_f
         operation[1] = I_CURRENT_TOKEN;
         operation[2] = I_NEXT_TOKEN_1;
 
-        result = BinaryOperation(operation, current_function, line_num);
+        result = Operation(operation, current_function, line_num);
         I_PREVIOUS_TOKEN.type = result.type;
         I_PREVIOUS_TOKEN.value = result.value;
         I_PREVIOUS_TOKEN.precedence = result.precedence;
@@ -454,4 +452,90 @@ Token ParseBinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_f
   }
 
   return result;
+}
+
+Token BinaryOperation(Token *tokens, size_t tokens_count, ssize_t current_function, size_t line_num)
+{
+  Token Return;
+
+  TranslateFunctions(tokens, &tokens_count, current_function, line_num);
+
+  typedef struct
+  {
+    size_t start;
+  } Parenthesis;
+
+  size_t parentheses_size = 4;
+
+  Parenthesis *parentheses = calloc(parentheses_size, sizeof(Parenthesis));
+  if (!parentheses)
+    error(line_num, MEM_CALLOC_FAILED, "Failed to calloc() parentheses.");
+
+  size_t parentheses_count = 0;
+
+  for (size_t i = 0; i < tokens_count; i++)
+  {
+    if (I_CURRENT_TOKEN.type == TOKEN_EOF)
+    {
+      break;
+    }
+
+    if (I_CURRENT_TOKEN.type == TOKEN_LPARENT && i != 0 &&
+        I_PREVIOUS_TOKEN.type != TOKEN_IDENTIFIER)
+    {
+      if (parentheses_count >= parentheses_size)
+      {
+        Parenthesis *tmp = realloc(parentheses, (parentheses_size * 2) * sizeof(Parenthesis));
+        if (!tmp)
+          error(line_num, MEM_REALLOC_FAILED, "Failed to realloc() parentheses.");
+
+        parentheses = tmp;
+
+        parentheses_size *= 2;
+      }
+
+      parentheses[parentheses_count].start = i;
+      parentheses_count++;
+    }
+  }
+
+  for (size_t i = 0; i < tokens_count; i++)
+  {
+    if (parentheses_count == 0)
+    {
+      break;
+    }
+
+    ResultTokens parent_tokens =
+      *GetParentTokens(&tokens[parentheses[parentheses_count - 1].start],
+                       tokens_count - parentheses[parentheses_count - 1].start, line_num);
+
+    Token result = ParseBinaryOperation(
+      parent_tokens.result_tokens, parent_tokens.result_tokens_count, current_function, line_num);
+
+    tokens[parentheses[parentheses_count - 1].start].type = result.type;
+    tokens[parentheses[parentheses_count - 1].start].value = result.value;
+    tokens[parentheses[parentheses_count - 1].start].precedence = result.precedence;
+
+    // Shift tokens
+    size_t shift_start = parentheses[parentheses_count - 1].start + 1;
+    size_t total_tokens_to_shift = parent_tokens.result_tokens_count;
+
+    for (size_t k = shift_start; k + total_tokens_to_shift < tokens_count; k++)
+    {
+      tokens[k] = tokens[k + total_tokens_to_shift];
+    }
+
+    tokens_count -= total_tokens_to_shift;
+
+    parentheses_count--;
+  }
+
+  Token result = ParseBinaryOperation(tokens, tokens_count, current_function, line_num);
+
+  Return.type = result.type;
+  Return.value = result.value;
+  Return.precedence = result.precedence;
+
+  return Return;
 }

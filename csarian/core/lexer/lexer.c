@@ -226,9 +226,16 @@ ResultTokens Lexer(char *code)
         error(current_line, MEM_CALLOC_FAILED, "Failed to calloc() digit value.");
       }
 
-      number[0] = current_char;
+      size_t pos = 0;
 
-      size_t pos = 1;
+      if (code[i - 1] == '-')
+      {
+        number[pos++] = '-';
+        number[pos + 1] = '\0';
+      }
+
+      number[pos++] = current_char;
+      number[pos + 1] = '\0';
 
       for (size_t j = i + 1; j <= code_len; j++)  // Iterate until we find the end of the number
       {
@@ -251,7 +258,8 @@ ResultTokens Lexer(char *code)
           number[pos++] = code[j];
           number[pos + 1] = '\0';
         }
-        else if (code[j] == '.')  // Detects decimal number
+
+        else if (code[j] == '.')
         {
           if (is_float == true)
           {
@@ -276,6 +284,7 @@ ResultTokens Lexer(char *code)
           number[pos++] = code[j];
           number[pos + 1] = '\0';
         }
+
         else
         {
           i = j - 1;
@@ -324,7 +333,10 @@ ResultTokens Lexer(char *code)
     // MINUS operator
     else if (current_char == '-')
     {
-      AddToken(TOKEN_MINUS, NULL, MINUS_PRECEDENCE);
+      if (!isdigit(next_char))
+      {
+        AddToken(TOKEN_MINUS, NULL, MINUS_PRECEDENCE);
+      }
     }
     // PERCENT operator
     else if (current_char == '%')

@@ -1,0 +1,15 @@
+fn sum(a, b)
+{
+  result = a + b
+  return result
+}
+
+fn sub(a, b)
+{
+  result = a - b
+  return result
+}
+
+printd(sum(5,5))
+
+printd(sub(10,5))
